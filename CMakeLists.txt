@@ -112,14 +112,14 @@ IF( CED_SERVER )
       ./src/server/glced.cc
       ./src/server/settings.cc
       ./src/server/screenshot.cc
-      ./src/server/gl_font.cc
+      ./src/server/third_party/gl_font.cc
+      ./src/server/third_party/fg_geometry.cc
       ./src/server/ui/input.cc
       ./src/server/ui/menu.cc
       ./src/server/ui/overlay.cc
       ./src/server/ui/selection.cc
       ./src/server/ui/layers.cc
       ./src/server/draw/element_registry.cc
-      ./src/server/draw/geometry/fg_geometry.cc
       ./src/server/draw/elements/helpers/fisheye.cc
       ./src/server/draw/elements/helpers/color.cc
       ./src/server/draw/elements/helpers/partial_cylinder.cc

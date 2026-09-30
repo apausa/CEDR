@@ -14,7 +14,7 @@
 
 #include <ced.h>
 #include <ced_menu.h>
-#include <gl_font.h>
+#include <third_party/gl_font.h>
 
 #include "settings.h"
 #include "ui/input.h"
