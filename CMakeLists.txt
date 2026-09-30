@@ -117,8 +117,8 @@ IF( CED_SERVER )
       ./src/server/ui/menu.cc
       ./src/server/ui/overlay.cc
       ./src/server/ui/selection.cc
+      ./src/server/ui/layers.cc
       ./src/server/draw/element_registry.cc
-      ./src/server/draw/layers.cc
       ./src/server/draw/geometry/fg_geometry.cc
       ./src/server/draw/geometry/partial_cylinder.cc
       ./src/server/draw/fisheye.cc
