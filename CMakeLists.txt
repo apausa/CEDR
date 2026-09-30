@@ -110,7 +110,6 @@ IF( CED_SERVER )
     ADD_EXECUTABLE(
       glced
       ./src/server/glced.cc
-      ./src/server/io/settings.cc
       ./src/server/io/screenshot.cc
       ./src/server/third_party/gl_font.cc
       ./src/server/third_party/fg_geometry.cc
