@@ -122,29 +122,6 @@ CED_SubSubMenu *datalayermenu;
 CED_PopUpMenu *popupmenu;
 CED_Menu *ced_menu=NULL;
 
-static struct _geoCylinder {
-  GLuint obj;
-  GLfloat d;       // radius
-  //GLfloat ir;
-  GLuint  sides;   // poligon order
-  GLfloat rotate;  // angle degree
-  GLfloat z;       // 1/2 length
-  GLfloat shift;   // in z
-  GLfloat r;       // R
-  GLfloat g;       // G  color
-  GLfloat b;       // B
-} geoCylinder[] = {
-  { 0,   50.0,  6,  0.0, 5658.5, -5658.5, 0.0, 0.0, 1.0 }, // beam tube
-  { 0,  380.0, 24,  0.0, 2658.5, -2658.5, 0.0, 0.0, 1.0 }, // inner TPC
-  { 0, 1840.0,  8, 22.5, 2700.0, -2700.0, 0.5, 0.5, 0.1 }, // inner ECAL
-  { 0, 3000.0, 16,  0.0, 2658.5, -2658.5, 0.0, 0.8, 0.0 }, // outer HCAL
-  { 0, 2045.7,  8, 22.5, 2700.0, -2700.0, 0.5, 0.5, 0.1 }, // outer ECAL
-  { 0, 3000.0,  8, 22.5, 702.25,  2826.0, 0.0, 0.8, 0.0 }, // endcap HCAL
-  { 0, 2045.7,  8, 22.5, 101.00,  2820.0, 0.5, 0.5, 0.1 }, // endcap ECAL
-  { 0, 3000.0,  8, 22.5, 702.25, -4230.5, 0.0, 0.8, 0.0 }, // endcap HCAL
-  { 0, 2045.7,  8, 22.5, 101.00, -3022.0, 0.5, 0.5, 0.1 }, // endcap ECAL
-};
-
 bool ced_needs_redraw = false;
 SDL_Window* ced_sdl_window = nullptr;
 void (*idle_func)(void) = nullptr;
@@ -162,30 +139,6 @@ static void set_bg_color(float one, float two, float three, float four){
     BG_COLOR[3]=four;
 
     glClearColor(BG_COLOR[0],BG_COLOR[1],BG_COLOR[2],BG_COLOR[3]);
-}
-
-static GLuint makeCylinder(struct _geoCylinder *c){
-    GLuint obj;
-
-    glPushMatrix();
-    obj = glGenLists(1);
-    glNewList(obj, GL_COMPILE);
-    glTranslatef(0.0, 0.0, c->shift);
-    if(c->rotate > 0.01 )
-        glRotatef(c->rotate, 0, 0, 1);
-    geoSolidCylinder(c->d, c->z*2, c->sides, 1); // @refactored: replace gluCylinder
-    glEndList();
-    glPopMatrix();
-    return obj;
-}
-
-static void makeGeometry(void) {
-    unsigned i;
-
-    // cylinders
-    for(i=0;i<sizeof(geoCylinder)/sizeof(struct _geoCylinder);i++){
-        geoCylinder[i].obj=makeCylinder(geoCylinder+i);
-    }
 }
 
 int isLayerVisible(int x){
@@ -232,8 +185,6 @@ static void init(void){
     // To enable Alpha channel (expensive !!!)
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    makeGeometry();
 }
 
 Point pick_point;
@@ -331,20 +282,6 @@ static void display_world(void){
     glBitmap(8,12,4,6,0,0,z_bm);
 
 
-    // cylinders
-    /*
-    glLineWidth(1.);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    for(i=0;i<sizeof(geoCylinder)/sizeof(struct _geoCylinder);i++){
-      glPushMatrix();
-      //  glPolygonMode(GL_FRONT_AND_BACK, (i<2)?GL_FILL:GL_LINE);
-      glColor4f(geoCylinder[i].r,geoCylinder[i].g,geoCylinder[i].b,
-  	      (i>=2)?1.:0.2);
-      glCallList(geoCylinder[i].obj);
-      glPopMatrix();
-    }
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    */
     //buildMenuPopup(); //hauke: test
     //glutAttachMenu(GLUT_RIGHT_BUTTON);
 
