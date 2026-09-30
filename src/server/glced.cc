@@ -878,32 +878,6 @@ void idle(void){
 }
 
 
-
-
-/*
-int isLayerVisible(int x){
-    if( ((1<<(x))&ced_visible_layers) > 0){
-        return(1);
-    }else{
-        return(0);
-    }
-}
-*/
-
-
-
-
-/*
-static void toggle_layer(unsigned l){
-    //printf("Toggle layer %u:\n",l);
-    //printBinaer(ced_visible_layers);
-    ced_visible_layers^=(1<<l);
-    //std::cout << "ced_visible_layers: "<<ced_visible_layers << std::endl;
-
-    //  printf("Toggle Layer %u  and ced_visible_layers = %u \n",l,ced_visible_layers);
-    //printBinaer(ced_visible_layers);
-}
-*/
 static void toggle_layer(unsigned l){
     if(l > CED_MAX_LAYER-1){ return; }
 
