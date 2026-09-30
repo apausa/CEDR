@@ -25,9 +25,9 @@
 #include <ced.h>
 #include <ced_cli.h>
 #include <ced_config.h>
-#include <fg_geometry.h>
 #include <SDL3/SDL.h>
 #include <gl_font.h>
+#include "draw/geometry/fg_geometry.h"
 #include "draw/layers.h"
 #include "ui/input.h"
 #include "ui/overlay.h"
