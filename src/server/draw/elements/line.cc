@@ -1,5 +1,4 @@
 #include "elements.h"
-#include "../fisheye.h"
 #include "../ui/selection.h"
 
 /*

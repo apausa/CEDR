@@ -1,6 +1,4 @@
-#include "fisheye.h"
-
-extern double fisheye_alpha;
+#include "../elements.h"
 
 CED_Point fisheye_transform(const float x, const float y, const float z, const double scale_factor) {
     CED_Point p_final;

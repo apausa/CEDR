@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "elements.h"
-#include "../fisheye.h"
 
 /*
  * GeoBoxR 

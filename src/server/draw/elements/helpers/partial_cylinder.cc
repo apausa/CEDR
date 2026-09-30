@@ -7,7 +7,7 @@
 #include <math.h>
 #include <vector>
 
-#include "partial_cylinder.h"
+#include "../elements.h"
 
 #define PI 3.14159265358979323846f 
 

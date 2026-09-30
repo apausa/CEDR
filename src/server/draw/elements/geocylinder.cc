@@ -1,7 +1,6 @@
 #include "../geometry/fg_geometry.h"
 
 #include "elements.h"
-#include "../fisheye.h"
 
 /*
  * GeoCylinder

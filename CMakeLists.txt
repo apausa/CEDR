@@ -120,9 +120,9 @@ IF( CED_SERVER )
       ./src/server/ui/layers.cc
       ./src/server/draw/element_registry.cc
       ./src/server/draw/geometry/fg_geometry.cc
-      ./src/server/draw/geometry/partial_cylinder.cc
-      ./src/server/draw/fisheye.cc
-      ./src/server/draw/elements/color.cc
+      ./src/server/draw/elements/helpers/fisheye.cc
+      ./src/server/draw/elements/helpers/color.cc
+      ./src/server/draw/elements/helpers/partial_cylinder.cc
       ./src/server/draw/elements/hit.cc
       ./src/server/draw/elements/line.cc
       ./src/server/draw/elements/geotube.cc
