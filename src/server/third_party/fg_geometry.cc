@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>
-#include <fg_geometry.h>
+#include "fg_geometry.h"
 
 #define GEOMETRY_EXIT_IF_NOT_INITIALISED(x)
 

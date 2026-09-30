@@ -25,10 +25,10 @@
 #include <ced.h>
 #include <ced_cli.h>
 #include <ced_config.h>
-#include <fg_geometry.h>
 #include <SDL3/SDL.h>
-#include <gl_font.h>
-#include "layers.h"
+#include <third_party/gl_font.h>
+#include "third_party/fg_geometry.h"
+#include "ui/layers.h"
 #include "ui/input.h"
 #include "ui/overlay.h"
 #include "ui/selection.h"
@@ -47,8 +47,8 @@
 
 
 #include <ced_menu.h>
-#include "settings.h"
-#include "screenshot.h"
+#include "io/settings.h"
+#include "io/screenshot.h"
 #include "ui/menu.h"
 
 using namespace std;

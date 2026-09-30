@@ -30,7 +30,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <fontconfig/fontconfig.h>
-#include <gl_font.h>
+#include "gl_font.h"
 
 static TTF_Font *_font_s = NULL;
 static TTF_Font *_font_m = NULL;

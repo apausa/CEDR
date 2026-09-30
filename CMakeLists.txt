@@ -110,30 +110,31 @@ IF( CED_SERVER )
     ADD_EXECUTABLE(
       glced
       ./src/server/glced.cc
-      ./src/server/element_registry.cc
-      ./src/server/settings.cc
-      ./src/server/screenshot.cc
-      ./src/server/layers.cc
-      ./src/server/gl_font.cc
-      ./src/server/geometry/fg_geometry.cc
-      ./src/server/geometry/cylinder_geometry.cc
-      ./src/server/geometry/fisheye.cc
+      ./src/server/io/settings.cc
+      ./src/server/io/screenshot.cc
+      ./src/server/third_party/gl_font.cc
+      ./src/server/third_party/fg_geometry.cc
       ./src/server/ui/input.cc
       ./src/server/ui/menu.cc
       ./src/server/ui/overlay.cc
       ./src/server/ui/selection.cc
-      ./src/server/render/color.cc
-      ./src/server/render/render_hit.cc
-      ./src/server/render/render_line.cc
-      ./src/server/render/render_geotube.cc
-      ./src/server/render/render_geocylinder.cc
-      ./src/server/render/render_geocylinder_r.cc
-      ./src/server/render/render_ellipsoid_r.cc
-      ./src/server/render/render_cluellipse_r.cc
-      ./src/server/render/render_geobox.cc
-      ./src/server/render/render_geobox_r.cc
-      ./src/server/render/render_cone_r.cc
-      ./src/server/render/render_geobox_r_solid.cc
+      ./src/server/ui/layers.cc
+      ./src/server/draw/element_registry.cc
+      ./src/server/draw/elements/helpers/fisheye.cc
+      ./src/server/draw/elements/helpers/color.cc
+      ./src/server/draw/elements/helpers/partial_cylinder.cc
+      ./src/server/draw/elements/hit.cc
+      ./src/server/draw/elements/line.cc
+      ./src/server/draw/elements/geotube.cc
+      ./src/server/draw/elements/geocylinder.cc
+      ./src/server/draw/elements/geocylinder_r.cc
+      ./src/server/draw/elements/ellipsoid_r.cc
+      ./src/server/draw/elements/cluellipse_r.cc
+      ./src/server/draw/elements/geobox.cc
+      ./src/server/draw/elements/geobox_r.cc
+      ./src/server/draw/elements/cone_r.cc
+      ./src/server/draw/elements/geobox_r_solid.cc
+      ./src/server/draw/elements/legend.cc
     )
 
     SET_TARGET_PROPERTIES( glced PROPERTIES

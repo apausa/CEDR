@@ -1,7 +1,6 @@
 #include <SDL3/SDL.h>
 
-#include "render.h"
-#include "../geometry/fisheye.h"
+#include "elements.h"
 #include "../ui/selection.h"
 
 /*
