@@ -19,12 +19,12 @@
 
 #include "screenshot.h"
 #include "ui/input.h"
+#include "render.h"
 
 using namespace std;
 
 // Owned by glced.cc.
 extern float WORLD_SIZE;
-void write_world_into_front_buffer(void);
 
 static int numpict=0;
 

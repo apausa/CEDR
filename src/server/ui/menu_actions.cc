@@ -18,6 +18,7 @@
 #include "ui/input.h"
 #include "ui/menu.h"
 #include "ui/selection.h"
+#include "render.h"
 
 using namespace std;
 
@@ -39,7 +40,6 @@ int isLayerVisible(int x);
 void set_world_size(float length);
 void set_bg_color(float one, float two, float three, float four);
 void toggle_layer(unsigned l);
-void reshape(int w, int h);
 
 CEDsettings setting_old[5];
 

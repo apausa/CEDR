@@ -116,6 +116,7 @@ IF( CED_SERVER )
       ./src/server/ui/input.cc
       ./src/server/ui/menu.cc
       ./src/server/ui/menu_actions.cc
+      ./src/server/ui/render.cc
       ./src/server/ui/overlay.cc
       ./src/server/ui/selection.cc
       ./src/server/ui/layers.cc
