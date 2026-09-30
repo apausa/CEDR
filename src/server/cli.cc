@@ -9,9 +9,9 @@
 
 #include "cli.h"
 #include "ui/input.h"
+#include "utils/helpers.h"
 
 extern float userDefinedBGColor[];
-void set_bg_color(float one, float two, float three, float four);
 
 void parseCliArgs(int argc, char *argv[]){
     char hex[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};

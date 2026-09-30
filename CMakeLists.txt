@@ -112,6 +112,7 @@ IF( CED_SERVER )
       ./src/server/glced.cc
       ./src/server/render.cc
       ./src/server/cli.cc
+      ./src/server/utils/helpers.cc
       ./src/server/io/screenshot.cc
       ./src/server/third_party/gl_font.cc
       ./src/server/third_party/fg_geometry.cc

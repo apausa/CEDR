@@ -17,6 +17,7 @@
 #include "input.h"
 #include "layers.h"
 #include "selection.h"
+#include "utils/helpers.h"
 
 using namespace std;
 
@@ -33,7 +34,6 @@ extern CED_SubSubMenu *datalayermenu;
 extern double fisheye_alpha;
 extern int showHelp;
 extern float userDefinedBGColor[];
-int isLayerVisible(int x);
 
 //for new angles add the new angle to this list and to define in ced_menu.h
 static int available_cutangles[]={0,30,45,90,100,135,120,150,170,180,190,200,220,240,260,270,280,290,310,330,340};

@@ -44,6 +44,7 @@
 #include "ui/menu.h"
 #include "render.h"
 #include "cli.h"
+#include "utils/helpers.h"
 
 #define DEFAULT_WORLD_SIZE 1000.  //SJA:FIXED Reduce world size to give better scale
 
@@ -72,14 +73,6 @@ GLfloat axe[][3]={
   { DEFAULT_WORLD_SIZE/2, 0., 0. },
   { 0., DEFAULT_WORLD_SIZE/2, 0. },
   { 0., 0., DEFAULT_WORLD_SIZE/2 }
-};
-
-// allows to reset the visible world size
-void set_world_size( float length) {
-  WORLD_SIZE = length ;
-  axe[1][0] = WORLD_SIZE / 2. ;
-  axe[2][1] = WORLD_SIZE / 2. ;
-  axe[3][2] = WORLD_SIZE / 2. ;
 };
 
 void defaultSettings(void){
@@ -151,51 +144,11 @@ GLfloat window_height = 0.;
 
 // ********** function definitions  (rest of file) ************************** //
 
-//set background color (hauke)
-void set_bg_color(float one, float two, float three, float four){
-    BG_COLOR[0]=one;
-    BG_COLOR[1]=two;
-    BG_COLOR[2]=three;
-    BG_COLOR[3]=four;
-
-    glClearColor(BG_COLOR[0],BG_COLOR[1],BG_COLOR[2],BG_COLOR[3]);
-}
-
-int isLayerVisible(int x){
-    //return(ced_visible_layers[x]);
-
-    return(setting.layer[x]);
-}
-
 Point pick_point;
 Point pre_pick_point;
 int selected_layer;
 bool  select_nothing=true;
 
-
-
-void idle(void){
-    ced_needs_redraw = true;
-}
-
-
-void toggle_layer(unsigned l){
-    if(l > CED_MAX_LAYER-1){ return; }
-
-    //    if(ced_visible_layers[l]){
-    //        ced_visible_layers[l]=false;
-    //    }else{
-    //        ced_visible_layers[l]=true;
-    //    }
-
-
-    if(setting.layer[l]){
-        setting.layer[l]=false;
-    }else{
-        setting.layer[l]=true;
-    }
-
-}
 
 
 static void input_data(void *data){
@@ -207,15 +160,6 @@ static void input_data(void *data){
           reshape((int)window_width, (int)window_height);
         }
     }
-}
-
-void toggleHelpWindow(void){ //hauke
-    if(showHelp == 1){
-        showHelp=0;
-    }else{
-        showHelp=1;
-    }
-    ced_needs_redraw = true;
 }
 
 static const int kResizeBorder = 6;
