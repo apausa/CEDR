@@ -84,7 +84,6 @@ int buildMenuPopup(void);//glced.c
 int  tcp_server(unsigned short port, void (*user_func)(void *data));
 
 
-#define VERSION_CONFIG 3
 struct CEDsettings{
     bool trans;         //grid or surface view
     bool persp;         //perspectivic view or flat projection 

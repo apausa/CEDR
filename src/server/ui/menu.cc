@@ -637,25 +637,6 @@ void buildMainMenu(void){
 
     settings->addItem(new CED_SubSubMenu("---",0));
     settings->addItem(background);
-    settings->addItem(new CED_SubSubMenu("---",0));
-
-    CED_SubSubMenu *save=new CED_SubSubMenu("Save settings");
-    CED_SubSubMenu *load=new CED_SubSubMenu("Load settings");
-    save->addItem(new CED_SubSubMenu("Save into slot 1",SAVE1));
-    save->addItem(new CED_SubSubMenu("Save into slot 2",SAVE2));
-    save->addItem(new CED_SubSubMenu("Save into slot 3",SAVE3));
-    save->addItem(new CED_SubSubMenu("Save into slot 4",SAVE4));
-    save->addItem(new CED_SubSubMenu("Save into slot 5",SAVE5));
-
-    load->addItem(new CED_SubSubMenu("Load settings 1",LOAD1));
-    load->addItem(new CED_SubSubMenu("Load settings 2",LOAD2));
-    load->addItem(new CED_SubSubMenu("Load settings 3",LOAD3));
-    load->addItem(new CED_SubSubMenu("Load settings 4",LOAD4));
-    load->addItem(new CED_SubSubMenu("Load settings 5",LOAD5));
-
-
-    settings->addItem(load);
-    settings->addItem(save);
 
     ced_menu->addSubMenu(settings);
 
