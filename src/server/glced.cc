@@ -703,59 +703,6 @@ void write_world_into_front_buffer(void){
     //printFPS();
 }
 
-//void drawStringBig (char *s){
-//    unsigned int i;
-//    for (i = 0; i[s]; i++){
-//        glutBitmapCharacter (GLUT_BITMAP_HELVETICA_18, s[i]);
-//    }
-//}
-
-//void drawHelpString (const string & str, float x,float y){ //format help strings strings: "[<key>] <description>"
-//    unsigned int i;
-//    glRasterPos2f(x,y);
-//
-//    int monospace = 0;
-//    for (i = 0; str[i]; i++){
-//        if(str[i] == '['){
-//            monospace = 1;
-//            if(setting.font == 0){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_10, '[');
-//            }else if(setting.font == 1){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_12, '[');
-//            }else if(setting.font == 2){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_18, '[');
-//            }
-//            i++;
-//        }
-//        else if(str[i] == ']'){
-//             monospace = 0;
-//        }
-//        if(monospace){
-//            if(setting.font == 0){
-//                glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
-//            }else if(setting.font == 1){
-//                glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
-//            }else if(setting.font == 2){
-//                glutBitmapCharacter(GLUT_BITMAP_9_BY_15, str[i]);
-//            }
-//        }else{
-//            //glutBitmapCharacter (GLUT_BITMAP_HELVETICA_10, str[i]);
-//            //glutBitmapCharacter ( GLUT_BITMAP_HELVETICA_12 , str[i]);
-//            //glutBitmapCharacter ( GLUT_BITMAP_HELVETICA_18 , str[i]);
-//            if(setting.font == 0){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_10, str[i]);
-//            }else if(setting.font == 1){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_12, str[i]);
-//            }else if(setting.font == 2){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_18, str[i]);
-//            }
-//        }
-//    }
-//}
-
-
-
-
 static void reshape(int w,int h){
     // printf("Reshaped: %dx%d\n",w,h);
     window_width=w;
@@ -1011,39 +958,6 @@ void addLayerDescriptionToMenu(int id, char * str){
     updateLayerEntryDetector(id);
 
 }
-
-/*
-//hauke
-//static unsigned TEXT_ID=0;
-static void ced_draw_text(CED_TEXT *text){
-    //int startY=-700;
-    char message[400];
-	void *font=GLUT_BITMAP_TIMES_ROMAN_10; //default font
-
-
-    printf("ced_draw_text: %i text: %s\n", text->id, text->text);
-
-    //renderBitmapString(SELECTED_X*10,SELECTED_Y*10,font,text->text);
-    glLoadIdentity();
-    int i,j;
-    int k=0;
-    for(i=0, j=0;i<strlen(text->text);i++){
-        if(text->text[i] == '\n' || text->text[i] == 0){
-            //printf("found newline\n");
-            strncpy(message,text->text+k,i-k);
-            message[i-k]=0;
-            k=i+1;
-
-            renderBitmapString(600,-700-70*j,font,"                     ");
-            renderBitmapString(600,-700-70*j,font,message);
-            j++;
-        }
-    }
-
-    glEnd();
-
-}
-*/
 
 void print_layer_text(CED_TEXT *obj){
     addLayerDescriptionToMenu(obj->id, obj->text);
