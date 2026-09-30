@@ -46,6 +46,7 @@ ENDIF()
 # include directories
 INCLUDE_DIRECTORIES( BEFORE ./include )
 INCLUDE_DIRECTORIES( BEFORE ./src )
+INCLUDE_DIRECTORIES( BEFORE ./src/server )
 INSTALL_DIRECTORY( ./include DESTINATION . FILES_MATCHING PATTERN "*.h" )
 
 
@@ -110,10 +111,15 @@ IF( CED_SERVER )
       glced
       ./src/server/glced.cc
       ./src/server/element_registry.cc
+      ./src/server/settings.cc
+      ./src/server/screenshot.cc
       ./src/server/font/gl_font.cc
+      ./src/server/font/hud.cc
       ./src/server/geometry/fg_geometry.cc
       ./src/server/geometry/cylinder_geometry.cc
       ./src/server/geometry/fisheye.cc
+      ./src/server/ui/input.cc
+      ./src/server/ui/menu.cc
       ./src/server/ui/selection.cc
       ./src/server/render/color.cc
       ./src/server/render/render_hit.cc
