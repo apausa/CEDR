@@ -21,6 +21,8 @@ DESCRIPTION:
 #ifndef __CED_MENU
 #define __CED_MENU
 
+#include <iostream>
+
 #include <third_party/gl_font.h>
 
 using namespace std;
