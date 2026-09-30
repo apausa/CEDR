@@ -70,3 +70,4 @@ void ced_draw_geobox(CED_GeoBox *box);
 void ced_draw_geobox_r(CED_GeoBoxR *box);
 void ced_draw_cone_r(CED_ConeR *cone);
 void ced_draw_geobox_r_solid(CED_GeoBoxR *box);
+void ced_draw_legend(CED_Legend *legend);

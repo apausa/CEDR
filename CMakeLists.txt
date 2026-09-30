@@ -134,6 +134,7 @@ IF( CED_SERVER )
       ./src/server/draw/elements/geobox_r.cc
       ./src/server/draw/elements/cone_r.cc
       ./src/server/draw/elements/geobox_r_solid.cc
+      ./src/server/draw/elements/legend.cc
     )
 
     SET_TARGET_PROPERTIES( glced PROPERTIES
