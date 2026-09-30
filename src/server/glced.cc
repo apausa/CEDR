@@ -47,9 +47,10 @@
 
 
 #include <ced_menu.h>
-#include "io/settings.h"
 #include "io/screenshot.h"
 #include "ui/menu.h"
+
+#define DEFAULT_WORLD_SIZE 1000.  //SJA:FIXED Reduce world size to give better scale
 
 using namespace std;
 
@@ -85,6 +86,55 @@ void set_world_size( float length) {
   axe[2][1] = WORLD_SIZE / 2. ;
   axe[3][2] = WORLD_SIZE / 2. ;
 };
+
+void defaultSettings(void){
+    setting.trans=true;
+    setting.persp=true;
+    setting.antia=false;
+    setting.light=false;
+    setting.picking_highlight=false;
+
+    setting.win_w=500;
+    setting.win_h=500;
+    setting.show_axes=true;
+    setting.fps=false;
+
+    for(int i=0;i<4;i++){
+        setting.bgcolor[i]=1; //white
+    }
+
+    setting.font=FONT_M;
+
+    for(int i=0;i<CED_MAX_LAYER;i++){
+        setting.layer[i]=true; // turn all layers on
+    }
+
+    for(int i=0;i<NUMBER_DETECTOR_LAYER;i++){
+        setting.detector_trans[i]=0.8;
+        setting.detector_cut_angle[i]=0;
+        setting.detector_cut_z[i]=7000;
+    }
+
+    setting.phi_projection=false;
+    setting.z_projection=false;
+    setting.fixed_view=false;
+
+    mm=mm_reset;
+    fisheye_alpha=0;
+    set_world_size(DEFAULT_WORLD_SIZE);
+
+    setting.va=mm.va;
+    setting.ha=mm.ha;
+    setting.zoom=mm.sf;
+    setting.fisheye_alpha=fisheye_alpha;
+    setting.fisheye_world_size=FISHEYE_WORLD_SIZE;
+    setting.world_size=WORLD_SIZE;
+
+    setting.autoshot=false;
+    setting.autoshot_scale=1;
+
+    std::cout << "Set options to default settings" << std::endl;
+}
 
 float userDefinedBGColor[] = {-1.0, -1.0, -1.0, -1.0};
 
@@ -586,29 +636,6 @@ void toggleHelpWindow(void){ //hauke
         showHelp=1;
     }
     ced_needs_redraw = true;
-}
-
-void updateSaveLoadMenu(int){ //id is save id, not menu id!
-    //    struct stat s;
-    //
-    //
-    //    const char *home = getenv("HOME");
-    //    char filename[1000];
-    //    char menuStr[1000];
-    //    snprintf(filename, 1000, "%s/.glced_cfg/settings%i", home, id);
-    //    if(stat(filename,&s) == 0){
-    //        snprintf(menuStr,1000,"Slot %i, created: %s",id,ctime(&s.st_mtime));
-    //    }else{
-    //        snprintf(menuStr,1000,"Slot %i, %s",id,"Empty");
-    //    }
-    //
-    //    glutSetMenu(subSave);
-    //    glutChangeToMenuEntry(id,menuStr, SAVE1+id-1);
-    //
-    //    glutSetMenu(subLoad);
-    //    glutChangeToMenuEntry(id,menuStr, LOAD1+id-1);
-    //
-    //    //std::cout << menuStr << std::endl;
 }
 
 void update_cut_angle_menu(void){
@@ -1635,24 +1662,6 @@ void selectFromMenu(int id){ //hauke
         case HELP:
             toggleHelpWindow();
             break;
-        case SAVE1:
-        case SAVE2:
-        case SAVE3:
-        case SAVE4:
-        case SAVE5:
-            saveSettings(id-SAVE1+1);
-            updateSaveLoadMenu(id-SAVE1+1);
-            break;
-
-        case LOAD1:
-        case LOAD2:
-        case LOAD3:
-        case LOAD4:
-        case LOAD5:
-            loadSettings(id-LOAD1+1);
-            set_bg_color(setting.bgcolor[0],setting.bgcolor[1],setting.bgcolor[2],setting.bgcolor[3]);
-            break;
-
         case SAVE_IMAGE1:
             setting.autoshot_scale=1;
             screenshot("/tmp/glced.tga",1);
@@ -1886,7 +1895,7 @@ int main(int argc,char *argv[]){
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 
-    loadSettings(1);
+    defaultSettings();
     setting.screenshot_sections=1;
 
 

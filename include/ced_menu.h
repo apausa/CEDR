@@ -21,6 +21,8 @@ DESCRIPTION:
 #ifndef __CED_MENU
 #define __CED_MENU
 
+#include <iostream>
+
 #include <third_party/gl_font.h>
 
 using namespace std;
@@ -973,17 +975,6 @@ class CED_PopUpMenu{
 
 
 #define HELP            100
-#define SAVE1           101
-#define SAVE2           102
-#define SAVE3           103
-#define SAVE4           104
-#define SAVE5           105
-#define LOAD1           131
-#define LOAD2           132
-#define LOAD3           133
-#define LOAD4           134
-#define LOAD5           135
-
 
 #define SAVE_IMAGE      5555
 #define SAVE_IMAGE1     5556
