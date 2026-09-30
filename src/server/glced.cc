@@ -613,20 +613,6 @@ void toggleHelpWindow(void){ //hauke
     ced_needs_redraw = true;
 }
 
-void updateLayerEntryInPopupMenu(int){ //id is layer id, not menu id!
-//    char string[200];
-//    char tmp[41];
-//    if(id < 0 || id > NUMBER_POPUP_LAYER-1){
-//        return;
-//    }
-//    strncpy(tmp, layerDescription[id], 40);
-//    tmp[40]=0;
-//
-//    sprintf(string,"[%s] Layer %s%i [%c]: %s%s",isLayerVisible(id)?"X":"   ", (id < 10)?"0":"" ,id, layer_keys[id], tmp, (strlen(layerDescription[id]) > 40)?"...":"");
-//    glutSetMenu(layerMenu);
-//    glutChangeToMenuEntry(id+2,string, id+LAYER_0);
-}
-
 void updateSaveLoadMenu(int){ //id is save id, not menu id!
 //    struct stat s;
 //
@@ -651,32 +637,12 @@ void updateSaveLoadMenu(int){ //id is save id, not menu id!
 }
 
 
-void updateLayerEntryDetector(int){ //id is layer id, not menu id!
-//    char string[200];
-//    char tmp[101];
-//    if(id < NUMBER_DATA_LAYER || id > NUMBER_DETECTOR_LAYER+NUMBER_DATA_LAYER-1 || id > CED_MAX_LAYER-1 || id < 0){
-//        return;
-//    }
-//    strncpy(tmp, layerDescription[id], 100);
-//    tmp[100]=0;
-//
-//    //sprintf(string,"[%s] Layer %s%i [%c]: %s%s",isLayerVisible(id)?"X":"   ", (id < 10)?"0":"" ,id, layer_keys[id], tmp, (strlen(layerDescription[id]) > 40)?"...":"");
-//    sprintf(string,"[%s] Layer %s%i [%c]: %s%s",isLayerVisible(id)?"X":"   ", (id < 10)?"0":"" ,id,detec_layer_keys[id-NUMBER_DATA_LAYER],tmp, (strlen(layerDescription[id]) > 100)?"...":"");
-//
-//    glutSetMenu(detectorMenu);
-//    glutChangeToMenuEntry(id-NUMBER_DATA_LAYER+2,string, id-NUMBER_DATA_LAYER+DETECTOR1);
-}
-
-
 void addLayerDescriptionToMenu(int id, char * str){
     if(id < 0 || id >= CED_MAX_LAYER){
         printf("Warning: Layer id out of range\n");
         return;
     }
     strncpy(layerDescription[id], str,CED_MAX_LAYER_CHAR-1);
-    updateLayerEntryInPopupMenu(id);
-    updateLayerEntryDetector(id);
-
 }
 
 void print_layer_text(CED_TEXT *obj){

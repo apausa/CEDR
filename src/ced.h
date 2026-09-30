@@ -78,7 +78,6 @@ void print_layer_text(CED_TEXT *obj);//glced.c
 void ced_draw_legend(CED_Legend *legend);//glced.c
 void selectFromMenu(int id);//glced.c
 void toggleHelpWindow(void);//glced.c
-void updateLayerEntryInPopupMenu(int); //glced.c
 int buildMenuPopup(void);//glced.c
 
 // glut_socks.cc
