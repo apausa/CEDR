@@ -28,6 +28,9 @@
 #include <fg_geometry.h>
 #include <SDL3/SDL.h>
 #include <gl_font.h>
+#include "layers.h"
+#include "ui/input.h"
+#include "ui/overlay.h"
 #include "ui/selection.h"
 
 #include <sys/select.h>
@@ -44,54 +47,24 @@
 
 
 #include <ced_menu.h>
-
-
-#define DEFAULT_WORLD_SIZE 1000.  //SJA:FIXED Reduce world size to give better scale
+#include "settings.h"
+#include "screenshot.h"
+#include "ui/menu.h"
 
 using namespace std;
-
-static int numpict=0;
 
 //*************** global variables ***************************************//
 int animation_start_time = 0;
 int animate_layer = -1;
-//for new angles add the new angle to this list and to define in ced_menu.h
-static int available_cutangles[]={0,30,45,90,100,135,120,150,170,180,190,200,220,240,260,270,280,290,310,330,340};
 int last_selected_layer;
 extern CEDsettings setting;
 CEDsettings setting_old[5];
-static char layerDescription[CED_MAX_LAYER][CED_MAX_LAYER_CHAR];
-//const char layer_keys[] = {'0','1', '2','3','4','5','6','7','8','9',')', '!', '@', '#', '$', '%', '^', '&', '*', '(', 't', 'y', 'u', 'i', 'o'};
-const char layer_keys[] = { DATALAYER_SHORTKEY_00, DATALAYER_SHORTKEY_01, DATALAYER_SHORTKEY_02, DATALAYER_SHORTKEY_03, DATALAYER_SHORTKEY_04, DATALAYER_SHORTKEY_05, DATALAYER_SHORTKEY_06, DATALAYER_SHORTKEY_07, DATALAYER_SHORTKEY_08, DATALAYER_SHORTKEY_09, DATALAYER_SHORTKEY_10, DATALAYER_SHORTKEY_11, DATALAYER_SHORTKEY_12, DATALAYER_SHORTKEY_13, DATALAYER_SHORTKEY_14, DATALAYER_SHORTKEY_15, DATALAYER_SHORTKEY_16, DATALAYER_SHORTKEY_17, DATALAYER_SHORTKEY_18, DATALAYER_SHORTKEY_19, DATALAYER_SHORTKEY_20, DATALAYER_SHORTKEY_21, DATALAYER_SHORTKEY_22, DATALAYER_SHORTKEY_23, DATALAYER_SHORTKEY_24};
-
-const char detec_layer_keys[] = {
-    DETECTORLAYER_SHORTKEY_00, DETECTORLAYER_SHORTKEY_01,
-    DETECTORLAYER_SHORTKEY_02, DETECTORLAYER_SHORTKEY_03,
-    DETECTORLAYER_SHORTKEY_04, DETECTORLAYER_SHORTKEY_05,
-    DETECTORLAYER_SHORTKEY_06, DETECTORLAYER_SHORTKEY_07,
-    DETECTORLAYER_SHORTKEY_08, DETECTORLAYER_SHORTKEY_09,
-    DETECTORLAYER_SHORTKEY_10, DETECTORLAYER_SHORTKEY_11,
-    DETECTORLAYER_SHORTKEY_12, DETECTORLAYER_SHORTKEY_13,
-    DETECTORLAYER_SHORTKEY_14, DETECTORLAYER_SHORTKEY_15,
-    DETECTORLAYER_SHORTKEY_16, DETECTORLAYER_SHORTKEY_17,
-    DETECTORLAYER_SHORTKEY_18, DETECTORLAYER_SHORTKEY_19,
-    DETECTORLAYER_SHORTKEY_20, DETECTORLAYER_SHORTKEY_21,
-    DETECTORLAYER_SHORTKEY_22, DETECTORLAYER_SHORTKEY_23,
-    DETECTORLAYER_SHORTKEY_24, DETECTORLAYER_SHORTKEY_25,
-    DETECTORLAYER_SHORTKEY_26, DETECTORLAYER_SHORTKEY_27,
-    DETECTORLAYER_SHORTKEY_28, DETECTORLAYER_SHORTKEY_29,
-    DETECTORLAYER_SHORTKEY_30, DETECTORLAYER_SHORTKEY_31,
-    DETECTORLAYER_SHORTKEY_32, DETECTORLAYER_SHORTKEY_33,
-    DETECTORLAYER_SHORTKEY_34, DETECTORLAYER_SHORTKEY_35,
-    DETECTORLAYER_SHORTKEY_36, DETECTORLAYER_SHORTKEY_37,
-    DETECTORLAYER_SHORTKEY_38, DETECTORLAYER_SHORTKEY_39,
-};
 
 static int subSave;
 static int subLoad;
-static int showHelp=0;
-static float WORLD_SIZE;
-static float FISHEYE_WORLD_SIZE;
+int showHelp=0;
+float WORLD_SIZE;
+float FISHEYE_WORLD_SIZE;
 double fisheye_alpha = 0.0;
 long int doubleClickTime=0;
 static float BG_COLOR[4];
@@ -106,27 +79,14 @@ static GLfloat axe[][3]={
 };
 
 // allows to reset the visible world size
-static void set_world_size( float length) {
+void set_world_size( float length) {
   WORLD_SIZE = length ;
   axe[1][0] = WORLD_SIZE / 2. ;
   axe[2][1] = WORLD_SIZE / 2. ;
   axe[3][2] = WORLD_SIZE / 2. ;
 };
 
-typedef GLfloat color_t[4];
-
-static color_t bgColors[] = {
-  { 0.0, 0.2, 0.4, 0.0 }, //light blue
-  { 0.0, 0.0, 0.0, 0.0 }, //black
-  { 0.2, 0.2, 0.2, 0.0 }, //gray shades
-  { 0.4, 0.4, 0.4, 0.0 },
-  { 0.6, 0.6, 0.6, 0.0 },
-  { 0.8, 0.8, 0.8, 0.0 },
-  { 1.0, 1.0, 1.0, 0.0 }  //white
-};
-static float userDefinedBGColor[] = {-1.0, -1.0, -1.0, -1.0};
-
-static unsigned int iBGcolor = 0;
+float userDefinedBGColor[] = {-1.0, -1.0, -1.0, -1.0};
 
 extern int socket_fd;
 extern void (*socket_fn)(void);
@@ -137,64 +97,12 @@ CED_SubSubMenu *datalayermenu;
 CED_PopUpMenu *popupmenu;
 CED_Menu *ced_menu=NULL;
 
-static struct _geoCylinder {
-  GLuint obj;
-  GLfloat d;       // radius
-  //GLfloat ir;
-  GLuint  sides;   // poligon order
-  GLfloat rotate;  // angle degree
-  GLfloat z;       // 1/2 length
-  GLfloat shift;   // in z
-  GLfloat r;       // R
-  GLfloat g;       // G  color
-  GLfloat b;       // B
-} geoCylinder[] = {
-  { 0,   50.0,  6,  0.0, 5658.5, -5658.5, 0.0, 0.0, 1.0 }, // beam tube
-  { 0,  380.0, 24,  0.0, 2658.5, -2658.5, 0.0, 0.0, 1.0 }, // inner TPC
-  { 0, 1840.0,  8, 22.5, 2700.0, -2700.0, 0.5, 0.5, 0.1 }, // inner ECAL
-  { 0, 3000.0, 16,  0.0, 2658.5, -2658.5, 0.0, 0.8, 0.0 }, // outer HCAL
-  { 0, 2045.7,  8, 22.5, 2700.0, -2700.0, 0.5, 0.5, 0.1 }, // outer ECAL
-  { 0, 3000.0,  8, 22.5, 702.25,  2826.0, 0.0, 0.8, 0.0 }, // endcap HCAL
-  { 0, 2045.7,  8, 22.5, 101.00,  2820.0, 0.5, 0.5, 0.1 }, // endcap ECAL
-  { 0, 3000.0,  8, 22.5, 702.25, -4230.5, 0.0, 0.8, 0.0 }, // endcap HCAL
-  { 0, 2045.7,  8, 22.5, 101.00, -3022.0, 0.5, 0.5, 0.1 }, // endcap ECAL
-};
-
 bool ced_needs_redraw = false;
 SDL_Window* ced_sdl_window = nullptr;
 void (*idle_func)(void) = nullptr;
 
 GLfloat window_width = 0.;
 GLfloat window_height = 0.;
-
-enum {
-    MOUSE_DOWN = 0,
-    MOUSE_UP = 1
-};
-enum {
-    MOUSE_LEFT = 0,
-    MOUSE_MIDDLE = 1,
-    MOUSE_RIGHT = 2
-};
-enum {
-    KEY_LEFT = 100,
-    KEY_UP = 101,
-    KEY_RIGHT = 102,
-    KEY_DOWN = 103,
-    KEY_PAGE_UP = 104,
-    KEY_PAGE_DOWN = 105,
-    KEY_HOME = 106,
-    KEY_END = 107,
-    KEY_INSERT = 108
-};
-
-//************ function declarations ************************* //
-void updateScreenshotMenu(void);
-void screenshot(const char *name, int times);
-void buildLayerMenus(void);
-void buildMainMenu(void);
-void buildPopUpMenu(int x, int y);
-
 
 // ********** function definitions  (rest of file) ************************** //
 
@@ -206,30 +114,6 @@ static void set_bg_color(float one, float two, float three, float four){
     BG_COLOR[3]=four;
 
     glClearColor(BG_COLOR[0],BG_COLOR[1],BG_COLOR[2],BG_COLOR[3]);
-}
-
-static GLuint makeCylinder(struct _geoCylinder *c){
-    GLuint obj;
-
-    glPushMatrix();
-    obj = glGenLists(1);
-    glNewList(obj, GL_COMPILE);
-    glTranslatef(0.0, 0.0, c->shift);
-    if(c->rotate > 0.01 )
-        glRotatef(c->rotate, 0, 0, 1);
-    geoSolidCylinder(c->d, c->z*2, c->sides, 1); // @refactored: replace gluCylinder
-    glEndList();
-    glPopMatrix();
-    return obj;
-}
-
-static void makeGeometry(void) {
-    unsigned i;
-
-    // cylinders
-    for(i=0;i<sizeof(geoCylinder)/sizeof(struct _geoCylinder);i++){
-        geoCylinder[i].obj=makeCylinder(geoCylinder+i);
-    }
 }
 
 int isLayerVisible(int x){
@@ -253,7 +137,7 @@ static void init(void){
     //glDepthFunc(GL_LESS);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //default
 
-//glEnable(GL_POLYGON_STIPPLE);
+    //glEnable(GL_POLYGON_STIPPLE);
 
 
     //glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
@@ -276,54 +160,12 @@ static void init(void){
     // To enable Alpha channel (expensive !!!)
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    makeGeometry();
 }
-
-typedef struct {
-    GLfloat x;
-    GLfloat y;
-    GLfloat z;
-} Point;
 
 Point pick_point;
 Point pre_pick_point;
 int selected_layer;
 bool  select_nothing=true;
-
-
-static struct {
-    GLfloat va; // vertical angle
-    GLfloat ha; // horisontal angle
-    GLfloat sf; // scale factor
-    Point mv; // the center
-    GLfloat va_start;
-    GLfloat ha_start;
-    GLfloat sf_start;
-    Point mv_start;
-} mm = {
-    30.,
-    150.,
-    0.1, //hauke decrease zoom, //SJA:FIXED set redraw scale a lot smaller
-    { 0., 0., 0. },
-    0.,
-    0.,
-    1.,
-    { 0., 0., 0. },
-}, mm_reset ;
-
-
-static enum {
-    NO_MOVE,
-    TURN_XY,
-    ZOOM,
-    ORIGIN
-} move_mode;
-static GLfloat mouse_x=0.;
-static GLfloat mouse_y=0.;
-
-
-
 
 // bitmaps for X,Y and Z
 static unsigned char x_bm[]={
@@ -346,13 +188,13 @@ static void axe_arrow(void){
 }
 
 static void display_world(void){
-/*   static GLfloat axe[][3]={ */
-/*     { 0., 0., 0., }, */
-/*     { WORLD_SIZE/2, 0., 0. }, */
-/*     { 0., WORLD_SIZE/2, 0. }, */
-/*     { 0., 0., WORLD_SIZE/2 } */
-/*   }; */
-  //  unsigned i;
+    /*   static GLfloat axe[][3]={ */
+    /*     { 0., 0., 0., }, */
+    /*     { WORLD_SIZE/2, 0., 0. }, */
+    /*     { 0., WORLD_SIZE/2, 0. }, */
+    /*     { 0., 0., WORLD_SIZE/2 } */
+    /*   }; */
+    //  unsigned i;
     if(setting.show_axes == false){
         return;
     }
@@ -415,542 +257,9 @@ static void display_world(void){
     glBitmap(8,12,4,6,0,0,z_bm);
 
 
-    // cylinders
-    /*
-    glLineWidth(1.);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    for(i=0;i<sizeof(geoCylinder)/sizeof(struct _geoCylinder);i++){
-      glPushMatrix();
-      //  glPolygonMode(GL_FRONT_AND_BACK, (i<2)?GL_FILL:GL_LINE);
-      glColor4f(geoCylinder[i].r,geoCylinder[i].g,geoCylinder[i].b,
-  	      (i>=2)?1.:0.2);
-      glCallList(geoCylinder[i].obj);
-      glPopMatrix();
-    }
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    */
     //buildMenuPopup(); //hauke: test
     //glutAttachMenu(GLUT_RIGHT_BUTTON);
 
-}
-
-
-void printFPS(void){
-    //calculate fps:
-    //----------------------
-    static int fps=0;
-    static int old_fps=0;
-    static double startTime;
-    struct timeval tv;
-
-
-    if(setting.fps == false){
-        return;
-    }
-
-
-    gettimeofday(&tv, 0);
-
-    if(tv.tv_sec+tv.tv_usec/1000000.0-startTime < 1.0){
-        fps++;
-    }else{
-        startTime=tv.tv_sec+tv.tv_usec/1000000.0;
-        //printf("FPS: %i\n", fps);
-        old_fps=fps;
-        fps=1;
-    }
-
-    //print on screen:
-    //----------------------
-
-    //saves the matrices on the stack
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-
-    //changes the matrices to be compatible with the old ced_draw_legend code:
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    SDL_Rect display_bounds;
-    SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &display_bounds);
-    GLfloat w = (GLfloat)display_bounds.w;
-    GLfloat h = (GLfloat)display_bounds.h;
-
-    int  world_size=1000; //static worldsize maybe will get problems in the future...
-    glOrtho(-world_size*w/h,world_size*w/h,-world_size,world_size, -15*world_size,15*world_size);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    char text[400];
-
-    sprintf(text, "FPS: %i", old_fps);
-
-    glLoadIdentity();
-
-    double dark=1.0-(setting.bgcolor[0]+setting.bgcolor[1]+setting.bgcolor[2])/3.0;
-    glColor3f(dark,dark,dark);
-
-
-    //void *font=GLUT_BITMAP_TIMES_ROMAN_10; //default font
-    //glRasterPos2f(-1200,-950);
-    //char *c;
-    //for (c=text; *c != '\0'; c++) {
-    //    glutBitmapCharacter(font, *c);
-    //}
-
-    font_render(setting.font, -1200, -950, text);
-
-    glEnd();
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-}
-
-std::string truncateTo(std::string str, size_t max_len) {
-  if (str.size() >= max_len) {
-      auto truncStr =  str.substr(0, max_len);
-      truncStr[max_len-3] = '.';
-      truncStr[max_len-2] = '.';
-      truncStr[max_len-1] = '.';
-      return truncStr;
-  }
-  return str;
-}
-
-std::string formatShortcut(int iLayer, const char key, const char *description,
-                           size_t max_len) {
-  std::stringstream sstr;
-  sstr << "(" << (isLayerVisible(iLayer) ? "X" : "_") << ") [" << key << "] "
-       << std::setfill('0') << std::setw(2) << iLayer << ": " << description;
-
-  return truncateTo(sstr.str(), max_len);
-}
-void printEventTime(void){
-    if( animate_layer < 0 ) return;
-
-    //calculate event time:
-    float elapsed_time = 0.001*( (int)SDL_GetTicks() - animation_start_time); // in seconds, but physicswise should be in ns
-    char text[42];
-    sprintf(text, "Event time: %.3f ns", elapsed_time);
-    double dark = 1.-(setting.bgcolor[0]+setting.bgcolor[1]+setting.bgcolor[2]) / 3.0;
-    
-    //print on screen:
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    SDL_Rect _disp_r;
-    SDL_GetDisplayBounds(0, &_disp_r);
-    GLfloat w=(GLfloat)_disp_r.w;
-    GLfloat h=(GLfloat)_disp_r.h;
-    glOrtho(-WORLD_SIZE*w/h,WORLD_SIZE*w/h,-WORLD_SIZE,WORLD_SIZE, -15*WORLD_SIZE,15*WORLD_SIZE);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glColor3f(dark,dark,dark);
-    font_render(setting.font, -600, -950, text);
-
-
-    glEnd();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-}
-
-
-void printShortcuts(void){
-
-    const unsigned int MAX_STR_LEN=30;
-    int i;
-
-    int height = font_get_height(setting.font) + 2;
-    int width  = font_get_width(setting.font, "A");
-
-    //float line = 12; //height of one line
-    //float column = MAX_STR_LEN*5; //width of one line
-
-    float line = height; //height of one line
-    float column = MAX_STR_LEN*width; //width of one line
-
-
-
-
-    vector<string> shortcuts;
-    shortcuts.push_back( "GENERAL SHORTCUTS:" );
-
-
-    shortcuts.push_back( "[ESC] Quit CED" );
-    shortcuts.push_back( "[h] Toggle shortcut frame" );
-    shortcuts.push_back( "[CTRL+s] Save screenshot" );
-    shortcuts.push_back( "[CTRL+z] Undo" );
-    shortcuts.push_back( "[r] Reset view" );
-    shortcuts.push_back( "[R] Reset CED" );
-    shortcuts.push_back( "[f] Front view" );
-    shortcuts.push_back( "[s] Side view" );
-    shortcuts.push_back( "[F] Front projection" );
-    shortcuts.push_back( "[S] Side projection" );
-    shortcuts.push_back( "[v] Fisheye projection" );
-    shortcuts.push_back( "[b] Change background color" );
-    shortcuts.push_back( "[+] Zoom in" );
-    shortcuts.push_back( "[-] Zoom out" );
-    shortcuts.push_back( "[c] Center" );
-    shortcuts.push_back( "[Z] Cut in z-axe direction" );
-    shortcuts.push_back( "[z] Cut in -z-axe direction" );
-    shortcuts.push_back( "[>] Increase transparency" );
-    shortcuts.push_back( "[<] Decrease transparency" );
-    shortcuts.push_back( "[m] Increase detector cut angle" );
-    shortcuts.push_back( "[m] Decrease detector cut angle" );
-    shortcuts.push_back( "[->] Move in z-direction" );
-    shortcuts.push_back( "[<-] Move in -z-direction" );
-    shortcuts.push_back( "[`] Toggle all data layers" );
-    shortcuts.push_back( "[~] Toggle all detector layers" );
-
-
-    shortcuts.push_back( "  " );
-    shortcuts.push_back( "DATA LAYERS:" );
-
-
-    for(i=0;i<NUMBER_DATA_LAYER;i++){
-        shortcuts.emplace_back(formatShortcut(i, layer_keys[i], layerDescription[i], MAX_STR_LEN));
-    }
-
-    shortcuts.push_back( " " );
-    shortcuts.push_back( "DETECTOR LAYERS: " );
-
-    for(i=NUMBER_DATA_LAYER;i<NUMBER_DETECTOR_LAYER+NUMBER_DATA_LAYER;i++){
-        shortcuts.emplace_back(formatShortcut(i, detec_layer_keys[-1 * NUMBER_DATA_LAYER + i], layerDescription[i], MAX_STR_LEN));
-    }
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-
-
-    glMatrixMode(GL_PROJECTION);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_DEPTH_TEST);
-
-
-    glLoadIdentity();
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    GLfloat w = window_width;
-    GLfloat h = window_height;
-
-    int  world_size=1000; //static worldsize maybe will get problems in the future...
-
-    //glOrtho(0,w,h, 0,0,15*WORLD_SIZE);
-
-    //glOrtho(0,w,h,-10,0,15*WORLD_SIZE);
-
-    glOrtho(0,w,h,-1*height,0,15*world_size);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-
-    double border_factor_line=0.005;
-    double border_factor_quad=0.0052;
-
-
-    double boarder_quad = 1000*border_factor_quad;
-    double boarder_line = 1000*border_factor_line;
-
-
-    if(int(w/column) > 1){
-        h=(boarder_quad*2.+(shortcuts.size()*1./int((w-3.*boarder_quad)/column) + 1.)*line)*3.+5;
-    }else{
-        h*=3;
-    }
-
-    //glColor4f(HELP_FRAME_FILL_COLOR);
-
-    if((setting.bgcolor[0] + setting.bgcolor[1] + setting.bgcolor[2]) < 0.5*3){
-        glColor4f(0.1,0.1,0.1,0.5);
-    }else{
-        glColor4f(0.9,0.9,0.9,0.5);
-    }
-
-
-    const int ITEMS_PER_COLUMN=int((h/3.0-boarder_quad*2)/(line)); //how many lines per column?
-    glBegin(GL_QUADS);
-    glVertex3f(boarder_quad, boarder_quad,0);
-    glVertex3f(w-boarder_quad,boarder_quad,0);
-    glVertex3f(w-boarder_quad, h/3.-boarder_quad,0);
-    glVertex3f(boarder_quad, h/3.-boarder_quad,0);
-    glEnd();
-
-
-
-    //glColor4f(HELP_FRAME_BOARDER_COLOR);
-    if((setting.bgcolor[0] + setting.bgcolor[1] + setting.bgcolor[2]) < 0.5*3){
-        glColor4f(0.2,0.2,0.2,0.5);
-    }else{
-        glColor4f(0.8,0.8,0.8,0.5);
-    }
-
-    glLineWidth(HELP_FRAME_BOARDER_LINE_SIZE);
-    glBegin(GL_LINES);
-    glVertex3f(boarder_line, boarder_line,0);
-    glVertex3f(w-boarder_line,boarder_line,0);
-
-
-    glVertex3f(w-boarder_line, h/3-boarder_line,0);
-    glVertex3f(boarder_line, h/3.-boarder_line,0);
-
-    glVertex3f(boarder_line, boarder_line,0);
-    glVertex3f(boarder_line, h/3. - boarder_line,0);
-
-    glVertex3f(w-boarder_line,boarder_line,0);
-    glVertex3f(w-boarder_line, h/3.-boarder_line,0);
-    glEnd();
-
-    //glColor3f(HELP_FRAME_TEXT_COLOR);
-    if((setting.bgcolor[0] + setting.bgcolor[1] + setting.bgcolor[2]) < 0.5*3){
-        glColor3f(1,1,1);
-    }else{
-        glColor3f(0,0,0);
-    }
-
-
-
-
-
-    for(i=0;(unsigned) i<shortcuts.size();i++){
-       font_render(setting.font, int(i/ITEMS_PER_COLUMN)*column+boarder_quad+5, (i%ITEMS_PER_COLUMN)*line+boarder_quad+10, shortcuts[i].c_str());
-    }
-
-    glEnable(GL_DEPTH_TEST);
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-
-}
-
-static void draw_ced_title_bar(void){ 
-    GLfloat w = window_width;
-    GLfloat h = window_height;
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix(); 
-    glLoadIdentity(); 
-
-    glOrtho(0, w, h, 0, 0, 15000); // Define the projection matrix
-
-    glMatrixMode(GL_MODELVIEW); 
-    glPushMatrix();
-    glLoadIdentity();
-
-    glDisable(GL_DEPTH_TEST); // Turn off depth testing, so graphic renders on top of the 3D scene
-
-    glColor3f(0.20f, 0.20f, 0.20f); // Set color to dark gray
-    glBegin(GL_QUADS); // Draw the header rectangle
-        glVertex3f(0, 0, 0);
-        glVertex3f(0, CED_TITLE_BAR_HEIGHT, 0);
-        glVertex3f(w, CED_TITLE_BAR_HEIGHT, 0);
-        glVertex3f(w, 0, 0);
-    glEnd();
-
-    glColor3f(0.80f, 0.80f, 0.80f); // Set color to light gray
-    font_render(setting.font, 6, 3, "C Event Display (CED)"); // Draw the header title
-
-    glEnable(GL_DEPTH_TEST); // Turn on depth testing, so the 3D scene renders normally on the next frame
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-}
-
-/**
- * Draws the energy spectrum legend
- * @author: SD
- * @date: 1.09.09
- * */
-
-void ced_draw_legend(CED_Legend *legend){
-    //saves the matrices on the stack
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-
-    //changes the matrices to be compatible with the old ced_draw_legend code:
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    SDL_Rect display_bounds;
-    SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &display_bounds);
-    GLfloat w = (GLfloat)display_bounds.w;
-    GLfloat h = (GLfloat)display_bounds.h;
-
-    int  WORLD_SIZE=1000; //static worldsize maybe will get problems in the future...
-    glOrtho(-WORLD_SIZE*w/h,WORLD_SIZE*w/h,-WORLD_SIZE,WORLD_SIZE, -15*WORLD_SIZE,15*WORLD_SIZE);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-
-    //begin original code:
-
-	int color_steps = legend->color_steps;
-	float ene_max = legend->ene_max;
-	float ene_min = legend->ene_min;
-	unsigned int ticks = legend->ticks;
-	char scale = legend->scale;
-	++ticks; // incremented so that input value is only the number of 'middle ticks'
-
-	/*
-	 * The legend position, width and height */
-	float legendThickness = 20;
-	float stripeThickness = 512/(float)color_steps;
-	float x_min = 1100;
-	float x_max = x_min+legendThickness;
-	float y_min = 400;
-	float y_max = y_min+stripeThickness;
-
-	int tickNumber = 1; // 'middle' tick counter
-	int i;
-
-	/** ticks */
-	char string[6];
-	int x_offset = 34;
-	int y_offset = 5;
-	float num;
-
-	/** Legend header */
-	char header [] = "GeV";
-	char footer [] = "LOG";
-	int x_offset_legend = 60;
-	int y_offset_legend = 20;
-
-	int font = setting.font;
-  	int tick_size = 10;
-
-	/**
-	 *  Legend header: GeV */
-	//glColor3f(1.0,1.0,1.0);
-    double dark=1.0-(setting.bgcolor[0]+setting.bgcolor[1]+setting.bgcolor[2])/3.0; //ever readable color
-    glColor3f(dark,dark,dark);
-
-	font_render(font, x_min-x_offset_legend, y_min+stripeThickness*color_steps-y_offset_legend, header);
-	glEnd();
-	//glPopMatrix();
-
-	/**
-	 *  Legend footer: LOG or LIN */
-	switch(scale){
-		case 'a': default:
-			font_render(font, x_min-x_offset_legend, y_min-y_offset_legend, footer);
-			glEnd();
-		break;
-		/** LIN */
-		case 'b':
-			strncpy( footer, "LIN", 4 );
-			font_render(font, x_min-x_offset_legend, y_min-y_offset_legend, footer);
-			glEnd();
-		break;
-	}
-
-	for (i=0; i<color_steps; ++i) {
-		/** This draws the colour spectrum */
-		glColor3f(legend->rgb_matrix[i][0]/(float)color_steps,legend->rgb_matrix[i][1]/(float)color_steps,legend->rgb_matrix[i][2]/(float)color_steps);
-
-		glBegin(GL_POLYGON);
-		glRasterPos2f(x_min, y_min);
-		glVertex3f( x_min,y_min+stripeThickness*i,0.0);
-		glVertex3f( x_max,y_min+stripeThickness*i,0.0);
-		glVertex3f( x_max,y_max+stripeThickness*i,0.0);
-		glVertex3f( x_min,y_max+stripeThickness*i,0.0);
-		glEnd();
-
-		/**
-		 * Legend: Max & min value display */
-		if (i==0 || i==(color_steps-1)){
-			glBegin(GL_POLYGON);
-			glColor3f(1.0, 1.0, 1.0);
-			glRasterPos2f(x_min, y_min);
-			glVertex3f( x_max,y_min+stripeThickness*i,0.0);
-			glVertex3f( x_max+tick_size,y_min+stripeThickness*i,0.0);
-			glVertex3f( x_max+tick_size,y_max+stripeThickness*i,0.0);
-			glVertex3f( x_max,y_max+stripeThickness*i,0.0);
-			glEnd();
-
-			/**
-		 	 * Spectrum max & min value display */
-			//glColor3f(1.0f,1.0f,1.0f);
-            //double dark=1.0-(setting.bgcolor[0]+setting.bgcolor[1]+setting.bgcolor[2])/3.0; //ever readable color
-            glColor3f(dark,dark,dark);
-
-
-
-			if (i==0){
-				snprintf(string, 6,  "%.1f", ene_min);
-				font_render(font, x_min+x_offset, y_min+y_offset, string);
-			}
-			else if (i==(color_steps-1)){
-				//printf("top\n");
-				snprintf(string, 6, "%.1f", ene_max);
-				font_render(font, x_min+x_offset, y_min+stripeThickness*i+y_offset, string);
-            }
-		}
-
-		/**
-		 *  Legend: middle ticks */
-		else if ((i%((color_steps-1)/ticks))==0 && (unsigned)tickNumber<ticks){
-
-			//printf("middle\n");
-
-			float pos;
-			pos = (float)tickNumber*(float)color_steps/(float)ticks;
-
-			glBegin(GL_POLYGON);
-			glColor3f(1.0, 1.0, 1.0);
-			glRasterPos2f(x_min, y_min);
-			glVertex3f( x_max,y_min+stripeThickness*pos,0.0);
-			glVertex3f( x_max+tick_size,y_min+stripeThickness*pos,0.0);
-			glVertex3f( x_max+tick_size,y_max+stripeThickness*pos,0.0);
-			glVertex3f( x_max,y_max+stripeThickness*pos,0.0);
-			glEnd();
-
-			/** Mid-tick legend generation: LOG */
-			switch(scale){
-				case 'a': default:
-					num = pow( (ene_max +1)/(ene_min +1), (float)tickNumber/(float)ticks ) * (ene_min+1) - 1;
-				break;
-				/** LIN */
-				case 'b':
-					num = (((ene_max-ene_min)/ticks)*tickNumber) + ene_min;
-				break;
-			}
-
-			snprintf(string, 6, "%.1f", num);
-
-
-            glColor3f(dark,dark,dark);
-			font_render(font, x_min+x_offset, y_min+stripeThickness*pos+y_offset, string);
-
-			++tickNumber;
-		}
-	}
-	glEnd();
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
 }
 
 static void display(void){
@@ -1005,56 +314,56 @@ static void display(void){
     glPopMatrix();
 }
 
-static void write_world_into_front_buffer(void){
-///////
-//   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    glPushMatrix();
-//
-//    // TODO: fix it!
-//    // in case of no rotate, in some cases it could get strange
-//    // lines in fisheye view from (0,0,0) to (-inf, -inf,x)
-//    setting.zoom=mm.sf;
-//    glScalef(mm.sf,mm.sf,mm.sf); //zoom
-//
-//    glRotatef(mm.va,1.,0.,0.); //rotate
-//    glRotatef(mm.ha,0.,1.0,0.); //rotate
-//    glTranslatef(-mm.mv.x,-mm.mv.y,-mm.mv.z); //move
-//
-//    if(setting.picking_highlight==true && select_nothing == false){
-//        glColor3f(1,0,0);
-//        glPointSize(10);
-//        glBegin(GL_POINTS);
-//        //cout<< "point: " << pick_point.x << ", " << pick_point.y << ", " << pick_point.z << endl;
-//        glVertex3f(pick_point.x,pick_point.y,pick_point.z);
-//        glEnd();
-//    }
-//    // draw static objects
-//    display_world(); //only axes?
-//
-//    // draw elements (hits + detector)
-//    ced_prepare_objmap();
-//    ced_do_draw_event();
-//
-//
-//    if(showHelp == 1){
-//        printShortcuts();
-//    }
-//
-//
-//    glDisable(GL_LIGHTING);
-//    ced_menu->draw();
-//    popupmenu->draw();
-//    printFPS();
-//
-//    if(setting.light==true){
-//        glEnable(GL_LIGHTING);
-//    }
-//
-//    glutSwapBuffers();
-//
-//    glPopMatrix();
-//
-///////
+void write_world_into_front_buffer(void){
+    ///////
+    //   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //    glPushMatrix();
+    //
+    //    // TODO: fix it!
+    //    // in case of no rotate, in some cases it could get strange
+    //    // lines in fisheye view from (0,0,0) to (-inf, -inf,x)
+    //    setting.zoom=mm.sf;
+    //    glScalef(mm.sf,mm.sf,mm.sf); //zoom
+    //
+    //    glRotatef(mm.va,1.,0.,0.); //rotate
+    //    glRotatef(mm.ha,0.,1.0,0.); //rotate
+    //    glTranslatef(-mm.mv.x,-mm.mv.y,-mm.mv.z); //move
+    //
+    //    if(setting.picking_highlight==true && select_nothing == false){
+    //        glColor3f(1,0,0);
+    //        glPointSize(10);
+    //        glBegin(GL_POINTS);
+    //        //cout<< "point: " << pick_point.x << ", " << pick_point.y << ", " << pick_point.z << endl;
+    //        glVertex3f(pick_point.x,pick_point.y,pick_point.z);
+    //        glEnd();
+    //    }
+    //    // draw static objects
+    //    display_world(); //only axes?
+    //
+    //    // draw elements (hits + detector)
+    //    ced_prepare_objmap();
+    //    ced_do_draw_event();
+    //
+    //
+    //    if(showHelp == 1){
+    //        printShortcuts();
+    //    }
+    //
+    //
+    //    glDisable(GL_LIGHTING);
+    //    ced_menu->draw();
+    //    popupmenu->draw();
+    //    printFPS();
+    //
+    //    if(setting.light==true){
+    //        glEnable(GL_LIGHTING);
+    //    }
+    //
+    //    glutSwapBuffers();
+    //
+    //    glPopMatrix();
+    //
+    ///////
     glMatrixMode(GL_PROJECTION);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1108,15 +417,15 @@ static void write_world_into_front_buffer(void){
     //cout << "mm.sf: " << mm.sf << "hinterer clipping plane: " << 5000*2.0*mm.sf << std::endl;
     //gluPerspective(60,window_width/window_height,100*2.0*mm.sf,5000*2.0*mm.sf);
 
-//    std::cout  << "clipping planes: " << 200*2.0*mm.sf << " bis " << 5000*2.0*mm.sf << std::endl;
-//
-//    gluPerspective(60,window_width/window_height,200*2.0*mm.sf,5000*2.0*mm.sf);
-//        glMatrixMode( GL_MODELVIEW );
-//
-//        glLoadIdentity();
-//        gluLookAt  (0,0,2000,    0,0,0,    0,1,0);
-//
-//
+    //    std::cout  << "clipping planes: " << 200*2.0*mm.sf << " bis " << 5000*2.0*mm.sf << std::endl;
+    //
+    //    gluPerspective(60,window_width/window_height,200*2.0*mm.sf,5000*2.0*mm.sf);
+    //        glMatrixMode( GL_MODELVIEW );
+    //
+    //        glLoadIdentity();
+    //        gluLookAt  (0,0,2000,    0,0,0,    0,1,0);
+    //
+    //
 
     if(setting.light==true){
         glEnable(GL_LIGHTING);
@@ -1125,59 +434,6 @@ static void write_world_into_front_buffer(void){
 
     //printFPS();
 }
-
-//void drawStringBig (char *s){
-//    unsigned int i;
-//    for (i = 0; i[s]; i++){
-//        glutBitmapCharacter (GLUT_BITMAP_HELVETICA_18, s[i]);
-//    }
-//}
-
-//void drawHelpString (const string & str, float x,float y){ //format help strings strings: "[<key>] <description>"
-//    unsigned int i;
-//    glRasterPos2f(x,y);
-//
-//    int monospace = 0;
-//    for (i = 0; str[i]; i++){
-//        if(str[i] == '['){
-//            monospace = 1;
-//            if(setting.font == 0){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_10, '[');
-//            }else if(setting.font == 1){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_12, '[');
-//            }else if(setting.font == 2){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_18, '[');
-//            }
-//            i++;
-//        }
-//        else if(str[i] == ']'){
-//             monospace = 0;
-//        }
-//        if(monospace){
-//            if(setting.font == 0){
-//                glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
-//            }else if(setting.font == 1){
-//                glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
-//            }else if(setting.font == 2){
-//                glutBitmapCharacter(GLUT_BITMAP_9_BY_15, str[i]);
-//            }
-//        }else{
-//            //glutBitmapCharacter (GLUT_BITMAP_HELVETICA_10, str[i]);
-//            //glutBitmapCharacter ( GLUT_BITMAP_HELVETICA_12 , str[i]);
-//            //glutBitmapCharacter ( GLUT_BITMAP_HELVETICA_18 , str[i]);
-//            if(setting.font == 0){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_10, str[i]);
-//            }else if(setting.font == 1){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_12, str[i]);
-//            }else if(setting.font == 2){
-//                glutBitmapCharacter (GLUT_BITMAP_HELVETICA_18, str[i]);
-//            }
-//        }
-//    }
-//}
-
-
-
 
 static void reshape(int w,int h){
     // printf("Reshaped: %dx%d\n",w,h);
@@ -1283,538 +539,24 @@ static void reshape(int w,int h){
     }
 
 
- //   //hauke
- //   if(showHelp == 1){
- //       glutSetWindow (subWindow);
- //       glutReshapeWindow (int(window_width-10),int(window_height/4));
- //   }
-
-
-
     //buildMainMenu();
     buildLayerMenus();
-    //updateScreenshotMenu();
 }
 
-void saveSettings(int slot){
-    ofstream file;
-    const char *home = getenv("HOME");
-    char filename[1000];
-    char dirname[1000];
-
-    snprintf(dirname, 1000, "%s/.glced_cfg/", home);
-    //if(exists){
-       mkdir(dirname,700);
-    //}
-    snprintf(filename, 1000, "%s/.glced_cfg/settings%i", home, slot);
-
-    //file.open(filename, ios::out | ios::binary);
-    file.open(filename);
-
-    if(file.is_open()){
-//        file << setting.trans << endl;
-//        file << setting.persp << endl;
-//        file.close();
-        setting.va=mm.va;
-        setting.ha=mm.ha;
-        setting.win_w=(int)window_width;
-        setting.win_h=(int)window_height;
-        setting.zoom = mm.sf;
-        setting.fisheye_alpha=fisheye_alpha;
-
-        setting.fisheye_world_size = FISHEYE_WORLD_SIZE;
-        setting.world_size = WORLD_SIZE;
-        //double bgcolor[4];
-        glGetDoublev(GL_COLOR_CLEAR_VALUE, setting.bgcolor);
-        //glGetDoublev(GL_COLOR_CLEAR_VALUE, bgcolor);
-        //cout << "bgcolor: " << bgcolor[0] << ", " << bgcolor[1] << ", " << bgcolor[2] << ", "  << bgcolor[3] << "\n" ;
-
-        //file.write((char*)&setting, sizeof(setting));
-        file<<"#Config version:"<<std::endl<<VERSION_CONFIG << std::endl;
-        file<<"#Transp:"<<std::endl<<setting.trans << std::endl;
-        file<<"#Persp:"<<std::endl<<setting.persp  << std::endl;
-        file<<"#Anti A:"<<std::endl<<setting.antia<< std::endl;
-        file<<"#Light:"<<std::endl<<setting.light<< std::endl;
-        //file<<"#Cut angle:"<<std::endl<<setting.cut_angle<< std::endl;
-        //file<<"#Trans value:"<<std::endl<<setting.trans_value<< std::endl;
-        //for(int i=0;i<CED_MAX_LAYER;i++){
-        //    file<<"#Visibility Layer " << i << ":" <<std::endl<<setting.layer[i]<< std::endl;
-        //}
-        file<<"#Phi projection:"<<std::endl<<setting.phi_projection<< std::endl;
-        file<<"#Z projection:"<<std::endl<<setting.z_projection<< std::endl;
-        for(int i=0;i<3;i++){
-            file<<"#View setting" << i << ":" <<std::endl<<setting.view[i] << std::endl;
-        }
-        file<<"#Vertical angle:"<<std::endl<<setting.va<< std::endl;
-        file<<"#Horiz angle:"<<std::endl<<setting.ha<< std::endl;
-        file<<"#Fixed view:"<<std::endl<<setting.fixed_view<< std::endl;
-        //file<<"#Z cutting:"<<std::endl<<setting.z_cutting<< std::endl;
-        file<<"#Window height:"<<std::endl<<setting.win_h<< std::endl;
-        file<<"#Window width:"<<std::endl<<setting.win_w<< std::endl;
-        file<<"#Zoom:"<<std::endl<<setting.zoom<< std::endl;
-        file<<"#Fisheye_alpha:"<<std::endl<<setting.fisheye_alpha<< std::endl;
-        file<<"#World size:"<<std::endl<<setting.world_size<< std::endl;
-        file<<"#fisheye world size:"<<std::endl<<setting.fisheye_world_size<< std::endl;
-        for(int i=0;i<4;i++){
-            file<<"#Background color, value "<< i << ":" << std::endl<<setting.bgcolor[i]<< std::endl;
-        }
-
-        file<<"#Show axes:"<<std::endl<<setting.show_axes<< std::endl;
-        file<<"#Show fps:"<<std::endl<<setting.fps<< std::endl;
-
-        file<<"#User interface font size"<<std::endl<<setting.font << std::endl;
-
-
-        for(int i=0;i<CED_MAX_LAYER;i++){
-            file<<"#Visibility of data layer " << i << std::endl;
-            file<< setting.layer[i] << std::endl;
-        }
-
-        for(int i=0;i<NUMBER_DETECTOR_LAYER;i++){
-            file<<"#Transparency value of detector layer: " << i << std::endl;
-            file << setting.detector_trans[i] << std::endl;
-
-            file<<"#Cut angle of detector layer: " << i << std::endl;
-            file << setting.detector_cut_angle[i] << std::endl;
-
-            file<<"#Cut z-value of detector layer: " << i << std::endl;
-            file << setting.detector_cut_z[i] << std::endl;
-        }
-
-        file<<"#Enable detector picking:"<<std::endl<<setting.detector_picking<< std::endl;
-
-        file<<"#Position:"<<std::endl<<
-                mm.mv.x<< std::endl <<
-                mm.mv.y<< std::endl <<
-                mm.mv.z<< std::endl;
-
-
-        file<<"#Picking marker:"<<std::endl<< setting.picking_highlight << std::endl;
-
-        std::cout << "Save settings to: " << filename << std::endl;
-
-    }else{
-        std::cout << "Error open file: " << filename << std::endl;
-    }
-}
-
-void defaultSettings(void){
-        setting.trans=true;
-        setting.light=false;
-        setting.antia=false;
-        //setting.cut_angle=180;
-        //setting.trans_value=0.8;
-        //setting.z_cutting=7000;
-
-
-        setting.win_w=500;
-        setting.win_h=500;
-        setting.show_axes=true;
-        setting.fps=false;
-        setting.persp=true;
-        setting.picking_highlight=false;
-
-
-
-
-
-        for(int i=0;i < 4; i++){
-            //setting.bgcolor[i]=0; //black
-            setting.bgcolor[i]=1; //white
-        }
-
-
-        setting.font=FONT_M;
-
-        for(int i=0; i < CED_MAX_LAYER; i++){
-            setting.layer[i]=true; // turn all layers on
-        }
-
-        for(int i=0;i<NUMBER_DETECTOR_LAYER;i++){
-            setting.detector_trans[i] =0.8;
-            setting.detector_cut_angle[i] = 0;//180;
-            setting.detector_cut_z[i] = 7000;
-        }
-
-            setting.phi_projection = false; // no phi projection
-            setting.z_projection=false; // no phi projection;
-            //mm.sf = fisheye_alpha > 0 ? mm.sf*8.0: mm.sf;
-            //fisheye_alpha=0;
-            setting.fixed_view=false;
-            //update_cut_angle_menu();
-
-            set_world_size(DEFAULT_WORLD_SIZE );
-
-
-        //mm=mm_reset;
-        //setting.va=mm.va;
-        //setting.ha=mm.ha;
-
-
-       //setting.zoom=0.072033;
-       //mm.sf = setting.zoom;
-//       fisheye_alpha=setting.fisheye_alpha;
-
-//        FISHEYE_WORLD_SIZE = setting.fisheye_world_size;
-//        WORLD_SIZE=setting.world_size;
-//        selectFromMenu(VIEW_RESET);
-
-            if((setting.trans == true && setting.persp == false) || (setting.trans == false && setting.persp == true)){
-                selectFromMenu(GRAFIC_PERSP); //switch persp on in new view, switch persp off in classic view
-            }
-            //setting.z_cutting=7000; //no z cutting
-            //setting.cut_angle=0;    // no detector cutting
-            for(int i = 0; i<NUMBER_DETECTOR_LAYER;i++){
-                setting.detector_trans[i]=0.8;
-                setting.detector_cut_angle[i]=0;
-                setting.detector_cut_z[i]=7000;
-            }
-
-            for(int i = 0; i<CED_MAX_LAYER;i++){
-                setting.layer[i]=true;
-            }
-            setting.phi_projection = false; // no phi projection
-            setting.z_projection=false; // no phi projection;
-            mm=mm_reset;
-            //mm.sf = fisheye_alpha > 0 ? mm.sf*8.0: mm.sf;
-            fisheye_alpha=0;
-            setting.fixed_view=false;
-            //update_cut_angle_menu();
-            set_world_size(DEFAULT_WORLD_SIZE );
-            //std::cout << "DEFAULT_WORLD_SIZE "  << DEFAULT_WORLD_SIZE << "zoom: " << mm.sf << std::endl;
-
-
-            setting.va=mm.va;
-            setting.ha=mm.ha;
-            setting.zoom=mm.sf;
-            setting.fisheye_alpha=fisheye_alpha;
-
-            setting.fisheye_world_size= FISHEYE_WORLD_SIZE ;
-            setting.world_size= WORLD_SIZE;
-
-            setting.autoshot=false;
-            setting.autoshot_scale=1;
-
-            std::cout << "Set options to default settings" << std::endl;
-}
 
 void idle(void){
     ced_needs_redraw = true;
 }
 
 
-void loadSettings(int slot){
-    ifstream file;
-
-    const char *home = getenv("HOME");
-    char filename[1000];
-    snprintf(filename, 1000, "%s/.glced_cfg/settings%i",home, slot);
-    //std::cout << "Read config: " << filename << std::endl;
-    file.open(filename);
-
-    if(file.is_open()){
-        string line;
-//        file.read((char*)&setting, sizeof(setting));
-            getline(file,line);getline(file,line);
-            if(VERSION_CONFIG != atoi(line.c_str())){
-                //std::cout << "WARNING: Cant read configfile (" << filename << ") please delete or rename it" << std::endl;
-                std::cout << "WARNING: Cant read configfile (" << filename << ") version does not match! Please delete or rename the file" << std::endl;
-                defaultSettings();
-                return;
-            } else{
-                getline(file,line);getline(file,line);
-                setting.trans=atoi(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.persp=atoi(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.antia=atoi(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.light=atoi(line.c_str());
-
-
-
-                getline(file,line);getline(file,line);
-                setting.phi_projection=atoi(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.z_projection=atoi(line.c_str());
-
-                for(int i=0;i<3;i++){
-                    getline(file,line);getline(file,line);
-                    setting.view[i]=atof(line.c_str());
-                }
-
-                getline(file,line);getline(file,line);
-                setting.va=atof(line.c_str());
-                getline(file,line);getline(file,line);
-                setting.ha=atof(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.fixed_view=atoi(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.win_h=atoi(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.win_w=atoi(line.c_str());
-                if(setting.win_w == 0 || setting.win_h == 0){
-                    setting.win_w = setting.win_h = 500;
-                }
-
-                getline(file,line);getline(file,line);
-                setting.zoom=atof(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.fisheye_alpha=atof(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.world_size=atof(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.fisheye_world_size=atof(line.c_str());
-
-                for(int i=0;i<4;i++){
-                    getline(file,line);getline(file,line);
-                    setting.bgcolor[i] = atof(line.c_str());
-                }
-
-                getline(file,line);getline(file,line);
-                setting.show_axes=atoi(line.c_str());
-
-                getline(file,line);getline(file,line);
-                setting.fps=atoi(line.c_str());
-
-
-                getline(file,line);getline(file,line);
-                setting.font = atoi(line.c_str());
-
-                for(int i=0;i<CED_MAX_LAYER;i++){
-                    getline(file,line);getline(file,line);
-                    setting.layer[i]=atoi(line.c_str());
-                }
-
-                for(int i=0;i<NUMBER_DETECTOR_LAYER;i++){
-                    getline(file,line);getline(file,line);
-                    setting.detector_trans[i]=atof(line.c_str());
-
-                    getline(file,line);getline(file,line);
-                    setting.detector_cut_angle[i]=atof(line.c_str());
-
-                    getline(file,line);getline(file,line);
-                    setting.detector_cut_z[i]=atof(line.c_str());
-                }
-
-                getline(file,line);getline(file,line);
-                setting.detector_picking = atoi(line.c_str());
-
-
-
-                getline(file,line);getline(file,line);
-                mm.mv.x = atof(line.c_str());
-                getline(file,line);
-                mm.mv.y = atof(line.c_str());
-                getline(file,line);
-                mm.mv.z = atof(line.c_str());
-
-
-                getline(file,line);getline(file,line);
-                setting.picking_highlight = atoi(line.c_str());
-
-
-
-
-            //set_bg_color(setting.bgcolor[0],setting.bgcolor[1],setting.bgcolor[2],setting.bgcolor[3]);
-            std::cout << "Read settings from: " << filename << std::endl;
-
-	    setting.autoshot_scale=1;
-            setting.autoshot=false;
-
-        }
-
-    }else{ //set to default
-        std::cout << "WARNING: Failed to read settings from: " << filename << std::endl;
-        defaultSettings();
-    }
-
-    mm.va=setting.va;
-    mm.ha=setting.ha;
-    mm.sf = setting.zoom;
-
-    fisheye_alpha=setting.fisheye_alpha;
-
-
-    FISHEYE_WORLD_SIZE = setting.fisheye_world_size;
-    WORLD_SIZE=setting.world_size;
-
-    //reshape(setting.win_w, setting.win_h);
-}
-
-
-
-
-void mouseWheel(int, int dir, int, int ){ //hauke
-    if(dir > 0){
-        selectFromMenu(VIEW_ZOOM_IN);
-    }else{
-        selectFromMenu(VIEW_ZOOM_OUT);
-    }
-}
-
-static void mouse_passive(int x,int y){
-    //hier ced_menu
-    ced_menu->mouseMove(x,y);
-    popupmenu->mouseMove(x,y);
-    //cout << "x = " << x <<  endl;
-}
-
-static void mouse(int btn,int state,int x,int y){
-    //hauke
-    struct timeval tv;
-
-    if(state!=MOUSE_DOWN){
-        move_mode=NO_MOVE;
-        return;
-    }
-    mouse_x=x;
-    mouse_y=y;
-    mm.ha_start=mm.ha;
-    mm.va_start=mm.va;
-    mm.sf_start=mm.sf;
-    mm.mv_start=mm.mv;
-
-    //double angle;
-    switch(btn){
-    case MOUSE_LEFT:
-        ced_menu->clickAt((int)mouse_x,(int)mouse_y);
-        popupmenu->clickAt((int)mouse_x,(int)mouse_y);
-        //reshape((int)window_width, (int)window_height);
-        ced_needs_redraw = true;
-
-
-
-        //hauke
-        gettimeofday(&tv, 0);
-        //FIX IT: get the system double click time
-        if( (tv.tv_sec*1000000+tv.tv_usec-doubleClickTime) < 300000 && (tv.tv_sec*1000000+tv.tv_usec-doubleClickTime) > 5){ //1000000=1sec
-
-            last_selected_layer=-1;
-            //printf("Double Click %f\n", tv.tv_sec*1000000+tv.tv_usec-doubleClickTime);
-            if(!ced_picking(x,y,&mm.mv.x,&mm.mv.y,&mm.mv.z)){
-
-
-                GLfloat p_x, p_y, p_z;
-                int id, layer, type;
-                if(!find_selected_object(x,y,&p_x,&p_y,&p_z, &id, &layer, &type)){ //if ==1 found hit, else clicked on background
-                    pick_point.x=p_x;
-                    pick_point.y=p_y;
-                    pick_point.z=p_z;
-
-                    select_nothing=false;
-
-                    if(type == 1){ //detector
-                        selected_layer=layer;
-                        last_selected_layer=layer;
-                        select_nothing=true;
-                    }else if(type == 0){ //data
-                        selected_layer=-1;
-                        pre_pick_point.x=p_x;
-                        pre_pick_point.y=p_y;
-                        pre_pick_point.z=p_z;
-                    }
-
-
-                    if(setting.detector_picking==false){
-                        selected_layer=-1;
-                    }
-                }
-
-
-               id = SELECTED_ID;
-               if(client_connected){
-                    send( socket_fd , &id , sizeof(int) , 0 );
-                }
-            }else{
-                select_nothing=true;
-                selected_layer=-1;
-            }
-
-
-        }else{
-            //printf("Single Click\n");
-            if(setting.fixed_view == 0){ //dont rotate the view when in side or front projection
-                move_mode=TURN_XY;
-            }
-        }
-        doubleClickTime=tv.tv_sec*1000000+tv.tv_usec;
-        return;
-        case MOUSE_RIGHT:
-          //cout << "right button clicked" << endl;
-          ced_menu->clickAt((int)mouse_x,(int)mouse_y);
-          buildPopUpMenu(x,y);
-          ced_needs_redraw = true;
-          if(ZOOM_RIGHT_CLICK == false){
-            return;
-          }
-          move_mode=ZOOM;
-          return;
-        case MOUSE_MIDDLE:
-          popupmenu->isExtend=false;
-          //cout << "middle button clicked" << endl;
-          //#ifdef __APPLE__
-          //    move_mode=ZOOM;
-          //#else
-          //    move_mode=ORIGIN;
-	      //#endif
-          move_mode=ORIGIN;
-          return;
-        default:
-          break;
-    }
-}
-
-void printBinaer(int x){
-    printf("Binaer:");
-    int i;
-    for(i=20;i>=0;--i) {
-        printf("%d",((x>>i)&1));
-    }
-    printf("\n");
-}
-/*
-int isLayerVisible(int x){
-    if( ((1<<(x))&ced_visible_layers) > 0){
-        return(1);
-    }else{
-        return(0);
-    }
-}
-*/
-
-
-
-
-/*
-static void toggle_layer(unsigned l){
-    //printf("Toggle layer %u:\n",l);
-    //printBinaer(ced_visible_layers);
-    ced_visible_layers^=(1<<l);
-    //std::cout << "ced_visible_layers: "<<ced_visible_layers << std::endl;
-
-    //  printf("Toggle Layer %u  and ced_visible_layers = %u \n",l,ced_visible_layers);
-    //printBinaer(ced_visible_layers);
-}
-*/
 static void toggle_layer(unsigned l){
     if(l > CED_MAX_LAYER-1){ return; }
 
-//    if(ced_visible_layers[l]){
-//        ced_visible_layers[l]=false;
-//    }else{
-//        ced_visible_layers[l]=true;
-//    }
+    //    if(ced_visible_layers[l]){
+    //        ced_visible_layers[l]=false;
+    //    }else{
+    //        ced_visible_layers[l]=true;
+    //    }
 
 
     if(setting.layer[l]){
@@ -1823,324 +565,6 @@ static void toggle_layer(unsigned l){
         setting.layer[l]=true;
     }
 
-}
-
-#define SELECT_FROM_MENU(key, action)                                          \
-  case key:                                                                    \
-    selectFromMenu(action);                                                    \
-    break
-
-
-static void keypressed(unsigned char key, int x, int y) {
-  // SM-H: TODO: socket list for communicating with client
-  // struct __glutSocketList *sock;
-  // if(key==0x1A ){ //ctrl+z
-
-  // if(key=='u' ){ //ctrl+z
-
-  switch (key) {
-    SELECT_FROM_MENU('r', VIEW_RESET);
-    SELECT_FROM_MENU('R', CED_RESET);
-    SELECT_FROM_MENU('f', VIEW_FRONT);
-    SELECT_FROM_MENU('F', TOGGLE_Z_PROJECTION);
-    SELECT_FROM_MENU('s', VIEW_SIDE);
-    SELECT_FROM_MENU('S', TOGGLE_PHI_PROJECTION);
-    SELECT_FROM_MENU('v', VIEW_FISHEYE);
-    SELECT_FROM_MENU('V', VIEW_FISHEYE);
-    SELECT_FROM_MENU('+', VIEW_ZOOM_IN);
-    SELECT_FROM_MENU('-', VIEW_ZOOM_OUT);
-
-    SELECT_FROM_MENU(26, UNDO);
-    SELECT_FROM_MENU('x', UNDO);
-    SELECT_FROM_MENU(19, SAVE_IMAGE1);
-  case 27: // esc
-    exit(0);
-  case 'c':
-  case 'C':
-    // selectFromMenu(VIEW_CENTER);
-    if (!ced_get_selected(x, y, &mm.mv.x, &mm.mv.y, &mm.mv.z)) {
-      ced_needs_redraw = true;
-    }
-    break;
-
-    SELECT_FROM_MENU('`', LAYER_ALL);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_00, LAYER_0);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_01, LAYER_1);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_02, LAYER_2);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_03, LAYER_3);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_04, LAYER_4);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_05, LAYER_5);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_06, LAYER_6);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_07, LAYER_7);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_08, LAYER_8);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_09, LAYER_9);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_10, LAYER_10);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_11, LAYER_11);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_12, LAYER_12);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_13, LAYER_13);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_14, LAYER_14);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_15, LAYER_15);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_16, LAYER_16);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_17, LAYER_17);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_18, LAYER_18);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_19, LAYER_19);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_20, LAYER_20);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_21, LAYER_21);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_22, LAYER_22);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_23, LAYER_23);
-    SELECT_FROM_MENU(DATALAYER_SHORTKEY_24, LAYER_24);
-
-    SELECT_FROM_MENU('~', DETECTOR_ALL);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_00, DETECTOR1);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_01, DETECTOR2);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_02, DETECTOR3);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_03, DETECTOR4);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_04, DETECTOR5);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_05, DETECTOR6);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_06, DETECTOR7);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_07, DETECTOR8);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_08, DETECTOR9);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_09, DETECTOR10);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_10, DETECTOR11);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_11, DETECTOR12);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_12, DETECTOR13);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_13, DETECTOR14);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_14, DETECTOR15);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_15, DETECTOR16);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_16, DETECTOR17);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_17, DETECTOR18);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_18, DETECTOR19);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_19, DETECTOR20);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_20, DETECTOR21);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_21, DETECTOR22);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_22, DETECTOR23);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_23, DETECTOR24);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_24, DETECTOR25);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_25, DETECTOR26);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_26, DETECTOR27);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_27, DETECTOR28);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_28, DETECTOR29);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_29, DETECTOR30);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_30, DETECTOR31);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_31, DETECTOR32);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_32, DETECTOR33);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_33, DETECTOR34);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_34, DETECTOR35);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_35, DETECTOR36);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_36, DETECTOR37);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_37, DETECTOR38);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_38, DETECTOR39);
-    SELECT_FROM_MENU(DETECTORLAYER_SHORTKEY_39, DETECTOR40);
-
-  case 'z':
-    if (last_selected_layer > 0) {
-      if (setting.detector_cut_z[last_selected_layer - NUMBER_DATA_LAYER] <
-          7000) {
-        setting.detector_cut_z[last_selected_layer - NUMBER_DATA_LAYER] += 100;
-      }
-    } else {
-      for (int i = 0; i < NUMBER_DETECTOR_LAYER; i++) {
-        if (setting.detector_cut_z[0] < 7000) {
-          setting.detector_cut_z[i] += 100;
-        }
-      }
-    }
-    ced_needs_redraw = true;
-    break;
-
-  case 'Z':
-    if (last_selected_layer > 0) {
-      if (setting.detector_cut_z[last_selected_layer - NUMBER_DATA_LAYER] >
-          -7000) {
-        setting.detector_cut_z[last_selected_layer - NUMBER_DATA_LAYER] -= 100;
-      }
-    } else {
-      for (int i = 0; i < NUMBER_DETECTOR_LAYER; i++) {
-        if (setting.detector_cut_z[i] > -7000) {
-          setting.detector_cut_z[i] -= 100;
-        }
-      }
-    }
-    ced_needs_redraw = true;
-    break;
-
-  case '<':
-    if (last_selected_layer > 0) {
-      if (setting.detector_trans[last_selected_layer - NUMBER_DATA_LAYER] >
-          0.005) {
-        setting.detector_trans[last_selected_layer - NUMBER_DATA_LAYER] -=
-            0.005;
-      } else {
-        setting.detector_trans[last_selected_layer - NUMBER_DATA_LAYER] = 0;
-      }
-    } else {
-      for (int i = 0; i < NUMBER_DETECTOR_LAYER; i++) {
-        if (setting.detector_trans[i] > 0.005) {
-          setting.detector_trans[i] -= 0.005;
-        } else {
-          setting.detector_trans[i] = 0;
-        }
-      }
-    }
-    ced_needs_redraw = true;
-    break;
-
-  case '>':
-    if (last_selected_layer > 0) {
-      if (setting.detector_trans[last_selected_layer - NUMBER_DATA_LAYER] <
-          1 - 0.005) {
-        setting.detector_trans[last_selected_layer - NUMBER_DATA_LAYER] +=
-            0.005;
-      } else {
-        setting.detector_trans[last_selected_layer - NUMBER_DATA_LAYER] = 1.;
-      }
-    } else {
-      for (int i = 0; i < NUMBER_DETECTOR_LAYER; i++) {
-        if (setting.detector_trans[i] < 1 - 0.005) {
-          setting.detector_trans[i] += 0.005;
-        } else {
-          setting.detector_trans[i] = 1.;
-        }
-      }
-    }
-    ced_needs_redraw = true;
-    break;
-
-  case 'm':
-    if (last_selected_layer > 0) {
-      if (setting.detector_cut_angle[last_selected_layer - NUMBER_DATA_LAYER] >
-          0) {
-        setting.detector_cut_angle[last_selected_layer - NUMBER_DATA_LAYER] -=
-            0.5;
-      }
-    } else {
-      for (int i = 0; i < NUMBER_DETECTOR_LAYER; i++) {
-        if (setting.detector_cut_angle[i] > 0) {
-          setting.detector_cut_angle[i] -= 0.5;
-        }
-      }
-    }
-    ced_needs_redraw = true;
-    break;
-
-  case 'M':
-    if (last_selected_layer > 0) {
-      if (setting.detector_cut_angle[last_selected_layer - NUMBER_DATA_LAYER] <
-          360) {
-        setting.detector_cut_angle[last_selected_layer - NUMBER_DATA_LAYER] +=
-            0.5;
-      }
-    } else {
-      for (int i = 0; i < NUMBER_DETECTOR_LAYER; i++) {
-        if (setting.detector_cut_angle[i] < 360) {
-          setting.detector_cut_angle[i] += 0.5;
-        }
-      }
-    }
-    ced_needs_redraw = true;
-    break;
-
-    case 'b': // toggle background color
-    ++iBGcolor;
-    if (iBGcolor >= sizeof(bgColors) / sizeof(color_t)) {
-      glClearColor(userDefinedBGColor[0], userDefinedBGColor[1],
-                   userDefinedBGColor[2], userDefinedBGColor[3]);
-      iBGcolor = -1;
-      printf("using color: %s\n", "user defined");
-      ced_needs_redraw = true;
-      return;
-    } else {
-      glClearColor(bgColors[iBGcolor][0], bgColors[iBGcolor][1],
-                   bgColors[iBGcolor][2], bgColors[iBGcolor][3]);
-      ced_needs_redraw = true;
-      printf("using color %u\n", iBGcolor);
-    }
-    break;
-  case 'h':
-    toggleHelpWindow();
-    break;
-  default:
-    std::cerr << "Unknown keyboard shortcut: " << key << std::endl;
-  }
-}
-
-static void SpecialKey( int key, int, int ){
-   switch (key) {
-   case KEY_RIGHT:
-    mm.mv.z+=50.;
-    break;
-   case KEY_LEFT:
-    mm.mv.z-=50.;
-    break;
-
-   case KEY_UP:
-    mm.mv.y+=50.;
-    break;
-   case KEY_DOWN:
-    mm.mv.y-=50.;
-    break;
-
-   default:
-      return;
-   }
-   ced_needs_redraw = true;
-}
-
-
-static void motion(int x,int y){
-    // printf("Mouse moved: %dx%d %f\n",x,y,angle_z);
-    if((move_mode == NO_MOVE) || !window_width || !window_height)
-      return;
-
-    if(move_mode == TURN_XY){
-      //    angle_y=correct_angle(start_angle_y-(x-mouse_x)*180./window_width);
-      //    turn_xy((x-mouse_x)*M_PI/window_height,
-      //           (y-mouse_y)*M_PI/window_width);
-      mm.ha=mm.ha_start+(x-mouse_x)*180./window_width;
-      mm.va=mm.va_start+(y-mouse_y)*180./window_height;
-
-      //todo
-    } else if (move_mode == ZOOM){
-        mm.sf=mm.sf_start+(y-mouse_y)*10./window_height;
-        if(mm.sf<0)
-  	  mm.sf=0.001;
-        else if(mm.sf>2000.)
-  	  mm.sf=2000.;
-    } else if (move_mode == ORIGIN){
-        //cout << "move" << endl;
-        /*
-        //old code: do not work with rotate
-        mm.mv.x=mm.mv_start.x-(x-mouse_x)*WORLD_SIZE/window_width
-        mm.mv.y=mm.mv_start.y+(y-mouse_y)*WORLD_SIZE/window_height
-        */
-
-
-//        float grad2rad=3.141*2/360;
-        float grad2rad=M_PI*2/360;
-        float x_factor_x =  cos(mm.ha*grad2rad);
-        float x_factor_y =  cos((mm.va-90)*grad2rad)*cos((mm.ha+90)*grad2rad);
-        float y_factor_x =  0;
-        float y_factor_y = -cos(mm.va*grad2rad);
-        float z_factor_x =  cos((mm.ha-90)*grad2rad);
-        float z_factor_y = -cos(mm.ha*grad2rad)*cos((mm.va+90)*grad2rad);
-
-        //float scale_factor=2200/mm.sf/exp(log(window_width*window_height)/2) ;
-        float scale_factor=580/mm.sf/exp(log(window_width*window_height)/2.5) ;
-
-
-        //mm.mv.x=mm.mv_start.x- (x-mouse_x)*WORLD_SIZE/window_width*10*x_factor_x - (y-mouse_y)*WORLD_SIZE/window_width*10*x_factor_y;
-        //mm.mv.y=mm.mv_start.y- (x-mouse_x)*WORLD_SIZE/window_width*10*y_factor_x - (y-mouse_y)*WORLD_SIZE/window_width*10*y_factor_y;
-        //mm.mv.z=mm.mv_start.z - (x-mouse_x)*WORLD_SIZE/window_width*10*z_factor_x - (y-mouse_y)*WORLD_SIZE/window_width*10*z_factor_y;
-
-        mm.mv.x=mm.mv_start.x- scale_factor*(x-mouse_x)*x_factor_x - scale_factor*(y-mouse_y)*x_factor_y;
-        mm.mv.y=mm.mv_start.y- scale_factor*(x-mouse_x)*y_factor_x - scale_factor*(y-mouse_y)*y_factor_y;
-        mm.mv.z=mm.mv_start.z -scale_factor*(x-mouse_x)*z_factor_x - scale_factor*(y-mouse_y)*z_factor_y;
-
-
-        //printf("y_factor_x = %f, y_factor_y=%f\n", y_factor_x, y_factor_y);
-        //printf("mm.ha = %f, mm.va = %f\n",mm.ha, mm.va);
-    }
-    ced_needs_redraw = true;
 }
 
 
@@ -2155,15 +579,6 @@ static void input_data(void *data){
     }
 }
 
-void subReshape (int w, int h)
-{
-  glViewport (0, 0, w, h);
-  glMatrixMode (GL_PROJECTION);
-  glLoadIdentity ();
-  glOrtho(0.0F, 1.0F, 0.0F, 1.0F, -1.0, 1.0);
-};
-
-
 void toggleHelpWindow(void){ //hauke
     if(showHelp == 1){
         showHelp=0;
@@ -2171,156 +586,30 @@ void toggleHelpWindow(void){ //hauke
         showHelp=1;
     }
     ced_needs_redraw = true;
-//    mainWindow=glutGetWindow();
-//
-//    if(showHelp == 1){
-//        glutDestroyWindow(subWindow);
-//        showHelp=0;
-//    }else if(showHelp == 0){
-//        subWindow=glutCreateSubWindow(mainWindow,5,5,int(window_width-10),int(window_height/4.0));
-//
-//        glutDisplayFunc(subDisplay);
-//        glutReshapeFunc(subReshape);
-//
-//        glutKeyboardFunc(keypressed);
-//        glutSpecialFunc(SpecialKey);
-//
-//        glutPostRedisplay();
-//
-//        glutSetWindow(mainWindow);
-//        showHelp=1;
-//    }
-//    glutSetWindow(mainWindow);
 }
 
-void updateLayerEntryInPopupMenu(int){ //id is layer id, not menu id!
-//    char string[200];
-//    char tmp[41];
-//    if(id < 0 || id > NUMBER_POPUP_LAYER-1){
-//        return;
-//    }
-//    strncpy(tmp, layerDescription[id], 40);
-//    tmp[40]=0;
-//
-//    sprintf(string,"[%s] Layer %s%i [%c]: %s%s",isLayerVisible(id)?"X":"   ", (id < 10)?"0":"" ,id, layer_keys[id], tmp, (strlen(layerDescription[id]) > 40)?"...":"");
-//    glutSetMenu(layerMenu);
-//    glutChangeToMenuEntry(id+2,string, id+LAYER_0);
-}
-
-void updateScreenshotMenu(void){
-//    char tmp[200];
-//
-//    glutSetMenu(subscreenshot);
-//    window_width=  glutGet(GLUT_WINDOW_WIDTH);
-//    window_height= glutGet(GLUT_WINDOW_HEIGHT);
-//
-//    sprintf(tmp,"Screenshot small (%.0f x %.0f) (~ %.2f MB)",window_width, window_height, window_width*window_height*3./1000000.);
-//    glutChangeToMenuEntry(1,tmp,SAVE_IMAGE1);
-//
-//    sprintf(tmp,"Screenshot medium (%.0f x %.0f) (~ %.2f MB)",window_width*4, window_height*4, 4*4*window_width*window_height*3./1000000.);
-//    glutChangeToMenuEntry(2,tmp,SAVE_IMAGE4);
-//
-//    sprintf(tmp,"Screenshot large (%.0f x %.0f) (~ %.2f MB)",window_width*10, window_height*10, 10*10*window_width*window_height*3./1000000.);
-//    glutChangeToMenuEntry(3,tmp,SAVE_IMAGE10);
-//
-//    sprintf(tmp,"Screenshot extra large (%.0f x %.0f) (~ %.2f MB)",window_width*20, window_height*20, 20*20*window_width*window_height*3./1000000.);
-//    glutChangeToMenuEntry(4,tmp,SAVE_IMAGE20);
-//
-//    sprintf(tmp,"Screenshot too large (%.0f x %.0f) (~ %.2f MB)",window_width*100, window_height*100, 100*100*window_width*window_height*3./1000000.);
-//    glutChangeToMenuEntry(5,tmp,SAVE_IMAGE100);
-//
-}
 void updateSaveLoadMenu(int){ //id is save id, not menu id!
-//    struct stat s;
-//
-//
-//    const char *home = getenv("HOME");
-//    char filename[1000];
-//    char menuStr[1000];
-//    snprintf(filename, 1000, "%s/.glced_cfg/settings%i", home, id);
-//    if(stat(filename,&s) == 0){
-//        snprintf(menuStr,1000,"Slot %i, created: %s",id,ctime(&s.st_mtime));
-//    }else{
-//        snprintf(menuStr,1000,"Slot %i, %s",id,"Empty");
-//    }
-//
-//    glutSetMenu(subSave);
-//    glutChangeToMenuEntry(id,menuStr, SAVE1+id-1);
-//
-//    glutSetMenu(subLoad);
-//    glutChangeToMenuEntry(id,menuStr, LOAD1+id-1);
-//
-//    //std::cout << menuStr << std::endl;
+    //    struct stat s;
+    //
+    //
+    //    const char *home = getenv("HOME");
+    //    char filename[1000];
+    //    char menuStr[1000];
+    //    snprintf(filename, 1000, "%s/.glced_cfg/settings%i", home, id);
+    //    if(stat(filename,&s) == 0){
+    //        snprintf(menuStr,1000,"Slot %i, created: %s",id,ctime(&s.st_mtime));
+    //    }else{
+    //        snprintf(menuStr,1000,"Slot %i, %s",id,"Empty");
+    //    }
+    //
+    //    glutSetMenu(subSave);
+    //    glutChangeToMenuEntry(id,menuStr, SAVE1+id-1);
+    //
+    //    glutSetMenu(subLoad);
+    //    glutChangeToMenuEntry(id,menuStr, LOAD1+id-1);
+    //
+    //    //std::cout << menuStr << std::endl;
 }
-
-
-void updateLayerEntryDetector(int){ //id is layer id, not menu id!
-//    char string[200];
-//    char tmp[101];
-//    if(id < NUMBER_DATA_LAYER || id > NUMBER_DETECTOR_LAYER+NUMBER_DATA_LAYER-1 || id > CED_MAX_LAYER-1 || id < 0){
-//        return;
-//    }
-//    strncpy(tmp, layerDescription[id], 100);
-//    tmp[100]=0;
-//
-//    //sprintf(string,"[%s] Layer %s%i [%c]: %s%s",isLayerVisible(id)?"X":"   ", (id < 10)?"0":"" ,id, layer_keys[id], tmp, (strlen(layerDescription[id]) > 40)?"...":"");
-//    sprintf(string,"[%s] Layer %s%i [%c]: %s%s",isLayerVisible(id)?"X":"   ", (id < 10)?"0":"" ,id,detec_layer_keys[id-NUMBER_DATA_LAYER],tmp, (strlen(layerDescription[id]) > 100)?"...":"");
-//
-//    glutSetMenu(detectorMenu);
-//    glutChangeToMenuEntry(id-NUMBER_DATA_LAYER+2,string, id-NUMBER_DATA_LAYER+DETECTOR1);
-}
-
-
-void addLayerDescriptionToMenu(int id, char * str){
-    if(id < 0 || id >= CED_MAX_LAYER){
-        printf("Warning: Layer id out of range\n");
-        return;
-    }
-    strncpy(layerDescription[id], str,CED_MAX_LAYER_CHAR-1);
-    updateLayerEntryInPopupMenu(id);
-    updateLayerEntryDetector(id);
-
-}
-
-/*
-//hauke
-//static unsigned TEXT_ID=0;
-static void ced_draw_text(CED_TEXT *text){
-    //int startY=-700;
-    char message[400];
-	void *font=GLUT_BITMAP_TIMES_ROMAN_10; //default font
-
-
-    printf("ced_draw_text: %i text: %s\n", text->id, text->text);
-
-    //renderBitmapString(SELECTED_X*10,SELECTED_Y*10,font,text->text);
-    glLoadIdentity();
-    int i,j;
-    int k=0;
-    for(i=0, j=0;i<strlen(text->text);i++){
-        if(text->text[i] == '\n' || text->text[i] == 0){
-            //printf("found newline\n");
-            strncpy(message,text->text+k,i-k);
-            message[i-k]=0;
-            k=i+1;
-
-            renderBitmapString(600,-700-70*j,font,"                     ");
-            renderBitmapString(600,-700-70*j,font,message);
-            j++;
-        }
-    }
-
-    glEnd();
-
-}
-*/
-
-void print_layer_text(CED_TEXT *obj){
-    addLayerDescriptionToMenu(obj->id, obj->text);
-}
-
-//end hauke
-
 
 void update_cut_angle_menu(void){
     return;
@@ -2467,66 +756,66 @@ void selectFromMenu(int id){ //hauke
 
 
 
-//        case BGCOLOR_GAINSBORO:
-//            set_bg_color(0.862745,0.862745,0.862745,0);
-//            //set_bg_color(0.862745,0.862745,0.862745,0);
-//            break;
-//
-//        case BGCOLOR_LIGHTGREY:
-//            set_bg_color(0.827451,0.827451,0.827451,0);
-//            break;
-//
-//        case BGCOLOR_DARKGRAY:
-//            set_bg_color(0.662745,0.662745,0.662745,0);
-//            break;
-//
-//        case BGCOLOR_GRAY:
-//            set_bg_color(0.501961,0.501961,0.501961,0);
-//            break;
-//
-//        case BGCOLOR_SILVER:
-//            set_bg_color(0.7529,0.7529,0.7529,0);
-//            break;
-//
-//        case BGCOLOR_DIMGRAY:
-//            set_bg_color(0.4118,0.4118,0.4118,0);
-//            break;
-//
-//        case BGCOLOR_LIGHTSTEELBLUE:
-//            set_bg_color(0.6902,0.7686 ,0.8706,0);
-//            break;
-//
-//        case BGCOLOR_STEELBLUE:
-//            set_bg_color(0.2745,0.5098,0.70588,0);
-//            break;
-//
-//        case BGCOLOR_SEAGREEN:
-//            set_bg_color(0.18039,0.54509,0.34117,0);
-//            break;
-//
-//        case BGCOLOR_ORANGE:
-//            set_bg_color(1,0.647,0,0);
-//            break;
-//
-//        case BGCOLOR_YELLOW:
-//            set_bg_color(1,1,0,0);
-//            break;
-//
-//        case BGCOLOR_VIOLET:
-//            set_bg_color(0.9333,0.5098,0.9333,0);
-//            break;
-//
-//        case BGCOLOR_BLACK:
-//            set_bg_color(0,0,0,0);
-//            break;
-//
-//        case BGCOLOR_BLUE:
-//            set_bg_color(0,0.2,0.4,0);
-//            break;
-//
-//        case BGCOLOR_WHITE:
-//            set_bg_color(1,1,1,0);
-//            break;
+    //        case BGCOLOR_GAINSBORO:
+    //            set_bg_color(0.862745,0.862745,0.862745,0);
+    //            //set_bg_color(0.862745,0.862745,0.862745,0);
+    //            break;
+    //
+    //        case BGCOLOR_LIGHTGREY:
+    //            set_bg_color(0.827451,0.827451,0.827451,0);
+    //            break;
+    //
+    //        case BGCOLOR_DARKGRAY:
+    //            set_bg_color(0.662745,0.662745,0.662745,0);
+    //            break;
+    //
+    //        case BGCOLOR_GRAY:
+    //            set_bg_color(0.501961,0.501961,0.501961,0);
+    //            break;
+    //
+    //        case BGCOLOR_SILVER:
+    //            set_bg_color(0.7529,0.7529,0.7529,0);
+    //            break;
+    //
+    //        case BGCOLOR_DIMGRAY:
+    //            set_bg_color(0.4118,0.4118,0.4118,0);
+    //            break;
+    //
+    //        case BGCOLOR_LIGHTSTEELBLUE:
+    //            set_bg_color(0.6902,0.7686 ,0.8706,0);
+    //            break;
+    //
+    //        case BGCOLOR_STEELBLUE:
+    //            set_bg_color(0.2745,0.5098,0.70588,0);
+    //            break;
+    //
+    //        case BGCOLOR_SEAGREEN:
+    //            set_bg_color(0.18039,0.54509,0.34117,0);
+    //            break;
+    //
+    //        case BGCOLOR_ORANGE:
+    //            set_bg_color(1,0.647,0,0);
+    //            break;
+    //
+    //        case BGCOLOR_YELLOW:
+    //            set_bg_color(1,1,0,0);
+    //            break;
+    //
+    //        case BGCOLOR_VIOLET:
+    //            set_bg_color(0.9333,0.5098,0.9333,0);
+    //            break;
+    //
+    //        case BGCOLOR_BLACK:
+    //            set_bg_color(0,0,0,0);
+    //            break;
+    //
+    //        case BGCOLOR_BLUE:
+    //            set_bg_color(0,0.2,0.4,0);
+    //            break;
+    //
+    //        case BGCOLOR_WHITE:
+    //            set_bg_color(1,1,1,0);
+    //            break;
 
         case BGCOLOR_USER:
             set_bg_color(userDefinedBGColor[0],userDefinedBGColor[1], userDefinedBGColor[2], userDefinedBGColor[3]);
@@ -3113,18 +1402,18 @@ void selectFromMenu(int id){ //hauke
             setting.detector_trans[last_selected_layer- NUMBER_DATA_LAYER]=1.0;
             break;
 
-//        case FULLSCREEN:
-//////            glutDestroyWindow(mainWindow);;
-//////            glutGameModeString("1280x1024:32@60");
-//////            glutEnterGameMode();
-////            if(fullscreen == false){
-////                glutFullScreen();
-////                fullscreen = true;
-////            }else{
-////                fullscreen = false;
-////                reshape(setting.win_w, setting.win_h);
-////            }
-//
+    //        case FULLSCREEN:
+    //////            glutDestroyWindow(mainWindow);;
+    //////            glutGameModeString("1280x1024:32@60");
+    //////            glutEnterGameMode();
+    ////            if(fullscreen == false){
+    ////                glutFullScreen();
+    ////                fullscreen = true;
+    ////            }else{
+    ////                fullscreen = false;
+    ////                reshape(setting.win_w, setting.win_h);
+    ////            }
+    //
         case AXES:
             if(setting.show_axes){
                 setting.show_axes= false;
@@ -3172,7 +1461,7 @@ void selectFromMenu(int id){ //hauke
             break;
 
         case GRAFIC_TRANS:
-/*
+    /*
             if(graphic[1] == 1){
                 //printf("Transparency  is now off\n");
                 graphic[1] = 0;
@@ -3181,7 +1470,7 @@ void selectFromMenu(int id){ //hauke
                 graphic[1] = 1;
             }
 
-*/
+    */
 
             if(setting.trans == true){
                 //printf("Transparency  is now off\n");
@@ -3213,8 +1502,8 @@ void selectFromMenu(int id){ //hauke
                  GLfloat light0_spec[] = {1, 1, 1, 0.5};
                  GLfloat light0_ambi[] = {1, 1, 1, 0.5};
                  GLfloat light0_diff[] = {1, 1, 1, 0.5};
-//      mm.ha=mm.ha_start+(x-mouse_x)*180./window_width;
-//      mm.va=mm.va_start+(y-mouse_y)*180./window_height;
+    //      mm.ha=mm.ha_start+(x-mouse_x)*180./window_width;
+    //      mm.va=mm.va_start+(y-mouse_y)*180./window_height;
 
 
                  GLfloat light0_pos[] = {20000, 20000, 20000};
@@ -3231,11 +1520,11 @@ void selectFromMenu(int id){ //hauke
                  //GLfloat angle[] = {30};
                  //GLfloat light0_ambi[]= {0.5, 0.5, 0.5, 0.5};
 
-/////////////////
+    /////////////////
 
 
 
-///////////////////
+    ///////////////////
 
 
                  glLightfv(GL_LIGHT0, GL_SPECULAR, light0_spec);
@@ -3423,690 +1712,6 @@ void selectFromMenu(int id){ //hauke
 
 }
 
-void buildPopUpMenu(int x, int y){
-    //static GLfloat p_pre_x=0, p_pre_y=0, p_pre_z=0;
-    char tmp[200];
-
-    GLfloat p_x, p_y, p_z;
-    int id, layer, type;
-
-    //delete the old one first!!!
-
-    popupmenu=new CED_PopUpMenu("");
-
-    buildLayerMenus();
-    popupmenu->addItem(datalayermenu);
-    popupmenu->addItem(detectorlayermenu);
-    popupmenu->addItem(new CED_SubSubMenu("---",0));
-
-    selected_layer=-1;
-    if(!find_selected_object(x,y,&p_x,&p_y,&p_z, &id, &layer, &type)){ //if ==1 found hit, else clicked on background
-        //cout << "TODO: ID: " << id << endl;
-        //cout << "PICK_HIT" << endl;
-        //find_selected_object(popupmenu->x_click,popupmenu->y_click,&pick_point.x,&pick_point.y,&pick_point.z, NULL, NULL, NULL);
-        select_nothing=false;
-        pick_point.x=p_x;pick_point.y=p_y;pick_point.z=p_z;
-
-
-        if(type == 0){
-            last_selected_layer=layer;
-            //popupmenu=new CED_PopUpMenu("Select datapoint");
-
-            popupmenu->addItem(new CED_SubSubMenu("Selected datapoint:",0));
-            sprintf(tmp,"Coordinates: (%.1f, %.1f, %1.f)",p_x,p_y,p_z);
-            popupmenu->addItem(new CED_SubSubMenu(tmp,0));
-            sprintf(tmp,"ID: %i",id);
-            popupmenu->addItem(new CED_SubSubMenu(tmp,0));
-            sprintf(tmp,"Distance previous selected hit: %.2f",pow(pow(pre_pick_point.x-p_x,2)+pow(pre_pick_point.y-p_y,2)+pow(pre_pick_point.z-p_z,2),0.5));
-            popupmenu->addItem(new CED_SubSubMenu(tmp,0));
-            sprintf(tmp,"Center object");
-            popupmenu->addItem(new CED_SubSubMenu(tmp,CENTER_HIT));
-            sprintf(tmp,"Pick object");
-            popupmenu->addItem(new CED_SubSubMenu(tmp,PICK_HIT));
-            sprintf(tmp,"Hide layer %i: %s)",layer,layerDescription[layer] );
-            popupmenu->addItem(new CED_SubSubMenu(tmp,LAYER_0+layer));
-
-            pre_pick_point.x=p_x;
-            pre_pick_point.y=p_y;
-            pre_pick_point.z=p_z;
-        }else if(type == 1){
-            //popupmenu=new CED_PopUpMenu("Select detector component");
-
-
-            select_nothing=true;
-            last_selected_layer=layer;
-            selected_layer=layer;
-            sprintf(tmp, "Selected detector: %s (Layer: %i)", layerDescription[layer], layer);
-            popupmenu->addItem(new CED_SubSubMenu(tmp,0));
-
-            sprintf(tmp,"Hide layer %i",layer);
-            popupmenu->addItem(new CED_SubSubMenu(tmp, layer-NUMBER_DATA_LAYER+DETECTOR1));
-
-            //sprintf(tmp,"Cut detector at this layer",layer, layerDescription[layer]);
-            //popupmenu->addItem(new CED_SubSubMenu(tmp, layer-NUMBER_DATA_LAYER+DETECTOR1));
-
-
-            sprintf(tmp,"Coordinates: (%.1f, %.1f, %1.f)",p_x,p_y,p_z);
-            popupmenu->addItem(new CED_SubSubMenu(tmp,0));
-            sprintf(tmp,"ID: %i",id);
-            popupmenu->addItem(new CED_SubSubMenu(tmp,0));
-            //sprintf(tmp,"Distance previous selected object: %.2f",pow(pow(p_pre_x-p_x,2)+pow(p_pre_y-p_y,2)+pow(p_pre_z-p_z,2),0.5));
-            //popupmenu->addItem(new CED_SubSubMenu(tmp,0));
-            sprintf(tmp,"Center object");
-            popupmenu->addItem(new CED_SubSubMenu(tmp,CENTER_HIT));
-            sprintf(tmp,"Pick object");
-            popupmenu->addItem(new CED_SubSubMenu(tmp,PICK_HIT));
-            //sprintf(tmp,"Hide layer %i: %s",layer, layerDescription[layer]);
-            //popupmenu->addItem(new CED_SubSubMenu(tmp, layer-NUMBER_DATA_LAYER+DETECTOR1));
-
-
-            snprintf(tmp,199,"Phi cut (%.0f)",setting.detector_cut_angle[layer-NUMBER_DATA_LAYER]);
-            CED_SubSubMenu *phicuts=new CED_SubSubMenu(tmp);
-
-            unsigned i;
-            char str[200];
-            for(i=0; (unsigned)i < sizeof(available_cutangles)/sizeof(available_cutangles[0]); i++){
-                    sprintf(str,"Cut of %i degree in phi", available_cutangles[i]);
-                    phicuts->addItem(new CED_SubSubMenu(str,  LAYER_CUT_ANGLE0+available_cutangles[i]));
-                    //glutChangeToMenuEntry(i+1, str,  CUT_ANGLE0+i);
-            }
-            popupmenu->addItem(phicuts);
-
-            char new_tmp[200];
-            snprintf(new_tmp,199,"Z-cut (%.0f)",setting.detector_cut_z[layer-NUMBER_DATA_LAYER]);
-            CED_SubSubMenu *zcuts=new CED_SubSubMenu(new_tmp);
-            zcuts->addItem(new CED_SubSubMenu("Cut at z=-6000", LAYER_CUT_Z_M6000));
-            zcuts->addItem(new CED_SubSubMenu("Cut at z=-4000", LAYER_CUT_Z_M4000));
-            zcuts->addItem(new CED_SubSubMenu("Cut at z=-2000", LAYER_CUT_Z_M2000));
-            zcuts->addItem(new CED_SubSubMenu("Cut at z=0",     LAYER_CUT_Z_0000));
-            zcuts->addItem(new CED_SubSubMenu("Cut at z=2000",  LAYER_CUT_Z_2000));
-            zcuts->addItem(new CED_SubSubMenu("Cut at z=4000",  LAYER_CUT_Z_4000));
-            zcuts->addItem(new CED_SubSubMenu("Cut at z=6000",  LAYER_CUT_Z_6000));
-            zcuts->addItem(new CED_SubSubMenu("Cut at z=7000",  LAYER_CUT_Z_7000));
-            popupmenu->addItem(zcuts);
-
-
-            //CED_SubMenu *phicuts=new CED_SubMenu("Cuts");
-            //cuts->addItem(new CED_SubSubMenu("Cut at z=0",  0));
-            //cuts->addItem(new CED_SubSubMenu("Cut at z=3000",  0));
-            //cuts->addItem(new CED_SubSubMenu("Cut at z=5000",  0));
-
-
-
-
-            snprintf(new_tmp,199,"Transparency (%.0f)",100*setting.detector_trans[layer-NUMBER_DATA_LAYER]);
-            CED_SubSubMenu *trans=new CED_SubSubMenu(new_tmp);
-            trans->addItem(new CED_SubSubMenu("    0%",LAYER_TRANS0));
-            trans->addItem(new CED_SubSubMenu("  40%", LAYER_TRANS40));
-            trans->addItem(new CED_SubSubMenu("  60%", LAYER_TRANS60));
-            trans->addItem(new CED_SubSubMenu("  70%", LAYER_TRANS70));
-            trans->addItem(new CED_SubSubMenu("  80%", LAYER_TRANS80));
-            trans->addItem(new CED_SubSubMenu("  90%", LAYER_TRANS90));
-            trans->addItem(new CED_SubSubMenu("  95%", LAYER_TRANS95));
-            trans->addItem(new CED_SubSubMenu("100%",  LAYER_TRANS100));
-            popupmenu->addItem(trans);
-
-
-
-            //pre_pick_point.x=p_x;
-            //pre_pick_point.y=p_y;
-            //pre_pick_point.z=p_z;
-        }
-    }else{
-           select_nothing=true;
-
-
-            last_selected_layer=-1;
-        //popupmenu=new CED_PopUpMenu("Change background color to:");
-
-        popupmenu->addItem(new CED_SubSubMenu("Change background color to:",0));
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION1_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION1));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION2_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION2));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION3_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION3));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION4_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION4));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION5_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION5));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION6_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION6));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION7_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION7));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION8_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION8));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION9_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION9));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION10_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION10));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION11_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION11));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION12_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION12));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION13_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION13));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION14_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION14));
-
-        sprintf(tmp,"%s",CED_BGCOLOR_OPTION15_NAME);
-        popupmenu->addItem(new CED_SubSubMenu(tmp,BGCOLOR_OPTION15));
-
-//
-//
-//      if(userDefinedBGColor[0] >= 0){ //is set
-//          settings->addItem(new CED_SubSubMenu("User defined",BGCOLOR_USER));
-//      }
-
-    }
-
-    int height = font_get_height(setting.font);
-    int width = font_get_width(setting.font, "A") * 20;
-
-    int pos_y=popupmenu->size()*height;
-
-    popupmenu->isExtend=true;
-
-    if( (x + width+10) > window_width){
-        popupmenu->x_start=x-width-10;
-        popupmenu->x_end=x-10;
-    }else{
-        popupmenu->x_start=x;
-        popupmenu->x_end=x+width;
-    }
-
-    if( (y+pos_y) > window_height){
-        popupmenu->y_start=y-pos_y;
-        popupmenu->y_end=y-pos_y+height+1;
-    }else{
-        popupmenu->y_start=y;
-        popupmenu->y_end=y+height+1;
-    }
-
-    popupmenu->y_click=y;
-    popupmenu->x_click=x;
-   // cout << "TODO: x,y: " << x << ", " << y << endl;
-}
-
-
-std::string formatSubmenuEntry(int iLayer, const char key,
-                               const char *description, size_t max_len) {
-  std::stringstream sstr;
-  sstr << (isLayerVisible(iLayer) ? "[X]" : "[ ]") << " " << std::setfill('0')
-       << std::setw(2) << iLayer;
-
-  // truncate the string such that the description has length max_len
-  // i.e. add the other chars to the length of the final string
-  int padding = 7;
-
-  if (key != '0') {
-    sstr << " [" << key << "]";
-    padding = 11;
-  }
-  sstr << ": " << description;
-
-  return truncateTo(sstr.str(), max_len + padding);
-}
-
-void buildLayerMenus(void){
-    //std::cout << "enter buildLayerMenus" << std::endl;
-    //if(ced_menu != NULL && detectorlayermenu != NULL && datalayermenu != NULL){
-    //    delete ced_menu;
-    //}
-
-    detectorlayermenu=new CED_SubSubMenu("Detector layers",0);
-    datalayermenu=new CED_SubSubMenu("Data layers",0);
-    int i;
-    constexpr unsigned max=150;
-    for(i=0;i<NUMBER_POPUP_LAYER;i++){
-        datalayermenu->addItem(new CED_SubSubMenu(formatSubmenuEntry(i, layer_keys[i], layerDescription[i], max), LAYER_0+i));
-    }
-    for(i=NUMBER_DATA_LAYER;i<NUMBER_DETECTOR_LAYER+NUMBER_DATA_LAYER;i++){
-        detectorlayermenu->addItem(new CED_SubSubMenu(formatSubmenuEntry(i, '0', layerDescription[i], max), DETECTOR1+i-NUMBER_DATA_LAYER));
-    }
-
-
-    //std::cout << "leave buildLayerMenus" << std::endl;
-    buildMainMenu();
-}
-void buildMainMenu(void){
-    //std::cout << "build main menu" << std::endl;
-    ced_menu=new CED_Menu();
-    //buildLayerMenus();
-
-
-    char str[200];
-    unsigned i;
-
-    //layers
-    CED_SubMenu *layers=new CED_SubMenu("Layers");
-
-    //buildLayerMenus();
-
-    if(setting.show_axes == true){
-        layers->addItem(new CED_SubSubMenu("[X] Axis", AXES));
-    }else{
-        layers->addItem(new CED_SubSubMenu("[ ] Axis", AXES));
-    }
-
-    layers->addItem(new CED_SubSubMenu("---", AXES));
-    bool result=true;
-    for(int ii=0;ii<NUMBER_DATA_LAYER;ii++){
-        if(setting.layer[ii] == false){
-            result=false;
-            break;
-        }
-    }
-    if(result){
-        layers->addItem(new CED_SubSubMenu("[X] Show/Hide all data Layers [`]", LAYER_ALL));
-    }else{
-        layers->addItem(new CED_SubSubMenu("[ ] Show/Hide all data Layers [`]", LAYER_ALL));
-    }
-
-    layers->addItem(datalayermenu);
-
-    layers->addItem(new CED_SubSubMenu("---", AXES));
-
-    result=true;
-    for(i=NUMBER_DATA_LAYER;i<NUMBER_DETECTOR_LAYER+NUMBER_DATA_LAYER;i++){
-        if(setting.layer[i] == false){
-            result=false;
-            break;
-        }
-    }
-    if(result){
-        layers->addItem(new CED_SubSubMenu("[X] Show/Hide complete detector", DETECTOR_ALL));
-    }else{
-        layers->addItem(new CED_SubSubMenu("[ ] Show/Hide complete detector", DETECTOR_ALL));
-    }
-
-    layers->addItem(detectorlayermenu);
-    ced_menu->addSubMenu(layers);
-
-    double tmptrans=setting.detector_trans[0];
-    for(i=1;i<NUMBER_DETECTOR_LAYER;i++){
-        if(setting.detector_trans[i] != tmptrans){
-            tmptrans=-100;
-            break;
-        }
-    }
-
-    CED_SubMenu *trans=new CED_SubMenu("Transparency");
-    if(tmptrans == 0){
-        trans->addItem(new CED_SubSubMenu("[X]   0%",TRANS0));
-    }else{
-        trans->addItem(new CED_SubSubMenu("[ ]   0%",TRANS0));
-    }
-
-    if(tmptrans == 0.40){
-        trans->addItem(new CED_SubSubMenu("[X]  40%",TRANS40));
-    }else{
-        trans->addItem(new CED_SubSubMenu("[ ]  40%",TRANS40));
-    }
-
-    if(tmptrans == 0.60){
-        trans->addItem(new CED_SubSubMenu("[X]  60%",TRANS60));
-    }else{
-        trans->addItem(new CED_SubSubMenu("[ ]  60%",TRANS60));
-    }
-
-    if(tmptrans == 0.70){
-        trans->addItem(new CED_SubSubMenu("[X]  70%",TRANS70));
-    }else{
-        trans->addItem(new CED_SubSubMenu("[ ]  70%",TRANS70));
-    }
-
-    if(tmptrans == 0.80){
-        trans->addItem(new CED_SubSubMenu("[X]  80%",TRANS80));
-    }else{
-        trans->addItem(new CED_SubSubMenu("[ ]  80%",TRANS80));
-    }
-
-
-    if(tmptrans == 0.90){
-        trans->addItem(new CED_SubSubMenu("[X]  90%",TRANS90));
-    }else{
-        trans->addItem(new CED_SubSubMenu("[ ]  90%",TRANS90));
-    }
-
-
-    if(tmptrans == 0.95){
-        trans->addItem(new CED_SubSubMenu("[X]  95%",TRANS95));
-    }else{
-        trans->addItem(new CED_SubSubMenu("[ ]  95%",TRANS95));
-    }
-
-
-    if(tmptrans == 1.00){
-        trans->addItem(new CED_SubSubMenu("[X] 100%",TRANS100));
-    }else{
-        trans->addItem(new CED_SubSubMenu("[ ] 100%",TRANS100));
-    }
-    ced_menu->addSubMenu(trans);
-
-    CED_SubMenu *camera=new CED_SubMenu("Camera");
-    camera->addItem(new CED_SubSubMenu("Reset view [r]", VIEW_RESET));
-    camera->addItem(new CED_SubSubMenu("Reset CED  [R]", CED_RESET));
-    camera->addItem(new CED_SubSubMenu("Front view [f]", VIEW_FRONT));
-    camera->addItem(new CED_SubSubMenu("Side view [s]",  VIEW_SIDE));
-
-    camera->addItem(new CED_SubSubMenu("---", 0));
-    if(setting.phi_projection==true){
-        camera->addItem(new CED_SubSubMenu("[X] Toggle side view projection [S]", TOGGLE_PHI_PROJECTION));
-    }else{
-        camera->addItem(new CED_SubSubMenu("[ ] Toggle side view projection [S]", TOGGLE_PHI_PROJECTION));
-    }
-    if(setting.z_projection==true){
-        camera->addItem(new CED_SubSubMenu("[X] Toggle front view projection [F]", TOGGLE_Z_PROJECTION));
-    }else{
-        camera->addItem(new CED_SubSubMenu("[ ] Toggle front view projection [F]", TOGGLE_Z_PROJECTION));
-    }
-    if(fisheye_alpha > 0){
-        camera->addItem(new CED_SubSubMenu("[X] Toggle fisheye projection [v]",VIEW_FISHEYE));
-    }else{
-        camera->addItem(new CED_SubSubMenu("[ ] Toggle fisheye projection [v]",VIEW_FISHEYE));
-    }
-
-    camera->addItem(new CED_SubSubMenu("---", 0));
-    camera->addItem(new CED_SubSubMenu("Zoom in [+]", VIEW_ZOOM_IN));
-    camera->addItem(new CED_SubSubMenu("Zoom out [-]", VIEW_ZOOM_OUT));
-    ced_menu->addSubMenu(camera);
-
-
-
-
-    double tmpcut=setting.detector_cut_angle[0];
-    for(i=1;i<NUMBER_DETECTOR_LAYER;i++){
-        if(setting.detector_cut_angle[i] != tmpcut){
-            tmpcut=-100;
-            break;
-        }
-    }
-
-    CED_SubMenu *cuts=new CED_SubMenu("Cuts");
-    for(i=0; (unsigned)i < sizeof(available_cutangles)/sizeof(available_cutangles[0]); i++){
-            if(available_cutangles[i] == tmpcut){
-                sprintf(str,"[X] Cut of %i degree in phi", available_cutangles[i]);
-            }else{
-                sprintf(str,"[ ] Cut of %i degree in phi", available_cutangles[i]);
-            }
-            cuts->addItem(new CED_SubSubMenu(str,  CUT_ANGLE0+available_cutangles[i]));
-            //glutChangeToMenuEntry(i+1, str,  CUT_ANGLE0+i);
-    }
-
-    //CED_SubSubMenu *zcuts=new CED_SubSubMenu("Z cut");
-
-    tmpcut=setting.detector_cut_z[0];
-    for(i=1;i<NUMBER_DETECTOR_LAYER;i++){
-        if(setting.detector_cut_z[i] != tmpcut){
-            tmpcut=-99999999;
-            break;
-        }
-    }
-
-    cuts->addItem(new CED_SubSubMenu("---", 0));
-    if(tmpcut == -6000){
-        cuts->addItem(new CED_SubSubMenu("[X] Cut at z=-6000", CUT_Z_M6000));
-    }else{
-        cuts->addItem(new CED_SubSubMenu("[ ] Cut at z=-6000", CUT_Z_M6000));
-    }
-
-    if(tmpcut == -4000){
-        cuts->addItem(new CED_SubSubMenu("[X] Cut at z=-4000", CUT_Z_M4000));
-    }else{
-        cuts->addItem(new CED_SubSubMenu("[ ] Cut at z=-4000", CUT_Z_M4000));
-    }
-
-    if(tmpcut == -2000){
-        cuts->addItem(new CED_SubSubMenu("[X] Cut at z=-2000", CUT_Z_M2000));
-    }else{
-        cuts->addItem(new CED_SubSubMenu("[ ] Cut at z=-2000", CUT_Z_M2000));
-    }
-
-    if(tmpcut == 0){
-        cuts->addItem(new CED_SubSubMenu("[X] Cut at z=0", CUT_Z_0000));
-    }else{
-        cuts->addItem(new CED_SubSubMenu("[ ] Cut at z=0", CUT_Z_0000));
-    }
-    if(tmpcut == 2000){
-        cuts->addItem(new CED_SubSubMenu("[X] Cut at z=2000", CUT_Z_2000));
-    }else{
-        cuts->addItem(new CED_SubSubMenu("[ ] Cut at z=2000", CUT_Z_2000));
-    }
-    if(tmpcut == 4000){
-        cuts->addItem(new CED_SubSubMenu("[X] Cut at z=4000", CUT_Z_4000));
-    }else{
-        cuts->addItem(new CED_SubSubMenu("[ ] Cut at z=4000", CUT_Z_4000));
-    }
-
-    if(tmpcut == 6000){
-        cuts->addItem(new CED_SubSubMenu("[X] Cut at z=6000", CUT_Z_6000));
-    }else{
-        cuts->addItem(new CED_SubSubMenu("[ ] Cut at z=6000", CUT_Z_6000));
-    }
-
-    if(tmpcut == 7000){
-        cuts->addItem(new CED_SubSubMenu("[X] Cut at z=7000", CUT_Z_7000));
-    }else{
-        cuts->addItem(new CED_SubSubMenu("[ ] Cut at z=7000", CUT_Z_7000));
-    }
-
-    ced_menu->addSubMenu(cuts);
-
-
-    CED_SubMenu *settings=new CED_SubMenu("Graphic");
-    if(setting.trans==false && setting.persp==false){
-        settings->addItem(new CED_SubSubMenu("[X] Graphic low",GRAFIC_LOW));
-    }else{
-        settings->addItem(new CED_SubSubMenu("[ ] Graphic low",GRAFIC_LOW));
-    }
-
-
-    if(setting.trans==true && setting.persp==true){
-        settings->addItem(new CED_SubSubMenu("[X] Graphic high",GRAFIC_HIGH));
-    }else{
-        settings->addItem(new CED_SubSubMenu("[ ] Graphic high",GRAFIC_HIGH));
-    }
-
-    settings->addItem(new CED_SubSubMenu("---",0));
-    if(setting.persp){
-        settings->addItem(new CED_SubSubMenu("[X] Toggle perspective",GRAFIC_PERSP));
-    }else{
-        settings->addItem(new CED_SubSubMenu("[ ] Toggle perspective",GRAFIC_PERSP));
-    }
-    if(setting.trans){
-        settings->addItem(new CED_SubSubMenu("[X] Toggle wireframe",GRAFIC_TRANS));
-    }else{
-        settings->addItem(new CED_SubSubMenu("[ ] Toggle wireframe",GRAFIC_TRANS));
-    }
-    if(setting.light){
-        settings->addItem(new CED_SubSubMenu("[X] Light", GRAFIC_LIGHT));
-    }else{
-        settings->addItem(new CED_SubSubMenu("[ ] Light", GRAFIC_LIGHT));
-    }
-    if(setting.antia){
-        settings->addItem(new CED_SubSubMenu("[X] Anti Aliasing", GRAFIC_ALIAS));
-    }else{
-        settings->addItem(new CED_SubSubMenu("[ ] Anti Aliasing", GRAFIC_ALIAS));
-    }
-
-    if(setting.picking_highlight){
-        settings->addItem(new CED_SubSubMenu("[X] Picking marker", PICKING_MARKER));
-    }else{
-        settings->addItem(new CED_SubSubMenu("[ ] Picking marker", PICKING_MARKER));
-    }
-
-
-    settings->addItem(new CED_SubSubMenu("Fade far objects",GRAFIC_FOG));
-    settings->addItem(new CED_SubSubMenu("Deepbuffer", GRAFIC_BUFFER));
-
-    settings->addItem(new CED_SubSubMenu("---",0));
-    if(setting.detector_picking){
-        settings->addItem(new CED_SubSubMenu("[X] Detector picking", TOGGLE_DETECTOR_PICKING));
-    }else{
-        settings->addItem(new CED_SubSubMenu("[ ] Detector picking", TOGGLE_DETECTOR_PICKING));
-    }
-    settings->addItem(new CED_SubSubMenu("---",0));
-
-    CED_SubSubMenu *font=new CED_SubSubMenu("Text font size ");
-    if(setting.font == FONT_S){
-        font->addItem(new CED_SubSubMenu("[X] Small",FONT0));
-    }else{
-        font->addItem(new CED_SubSubMenu("[ ] Small",FONT0));
-    }
-    if(setting.font == FONT_M){
-        font->addItem(new CED_SubSubMenu("[X] Medium",FONT1));
-    }else{
-        font->addItem(new CED_SubSubMenu("[ ] Medium",FONT1));
-    }
-    if(setting.font == FONT_L){
-        font->addItem(new CED_SubSubMenu("[X] Large",FONT2));
-    }else{
-        font->addItem(new CED_SubSubMenu("[ ] Large",FONT2));
-    }
-    settings->addItem(font);
-
-
-
-
-    CED_SubSubMenu *background=new CED_SubSubMenu("Change background color");
-    //sprintf(str,"Change background color to: %s",CED_BGCOLOR_OPTION1_NAME);
-    //background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION1));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION2_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION2));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION3_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION3));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION4_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION4));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION5_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION5));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION6_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION6));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION7_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION7));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION8_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION8));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION9_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION9));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION10_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION10));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION11_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION11));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION12_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION12));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION13_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION13));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION14_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION14));
-    sprintf(str,"%s",CED_BGCOLOR_OPTION15_NAME);
-    background->addItem(new CED_SubSubMenu(str,BGCOLOR_OPTION15));
-
-
-    if(userDefinedBGColor[0] >= 0){ //is set
-        background->addItem(new CED_SubSubMenu("User defined",BGCOLOR_USER));
-    }
-
-
-    settings->addItem(new CED_SubSubMenu("---",0));
-    settings->addItem(background);
-    settings->addItem(new CED_SubSubMenu("---",0));
-
-    CED_SubSubMenu *save=new CED_SubSubMenu("Save settings");
-    CED_SubSubMenu *load=new CED_SubSubMenu("Load settings");
-    save->addItem(new CED_SubSubMenu("Save into slot 1",SAVE1));
-    save->addItem(new CED_SubSubMenu("Save into slot 2",SAVE2));
-    save->addItem(new CED_SubSubMenu("Save into slot 3",SAVE3));
-    save->addItem(new CED_SubSubMenu("Save into slot 4",SAVE4));
-    save->addItem(new CED_SubSubMenu("Save into slot 5",SAVE5));
-
-    load->addItem(new CED_SubSubMenu("Load settings 1",LOAD1));
-    load->addItem(new CED_SubSubMenu("Load settings 2",LOAD2));
-    load->addItem(new CED_SubSubMenu("Load settings 3",LOAD3));
-    load->addItem(new CED_SubSubMenu("Load settings 4",LOAD4));
-    load->addItem(new CED_SubSubMenu("Load settings 5",LOAD5));
-
-
-    settings->addItem(load);
-    settings->addItem(save);
-
-    ced_menu->addSubMenu(settings);
-
-    char tmp[200];
-    CED_SubSubMenu *screenshot=new CED_SubSubMenu("Save screenshot");
-    sprintf(tmp,"original size (%i x %i)", int(setting.win_w), int(setting.win_h));
-    screenshot->addItem(new CED_SubSubMenu(tmp,SAVE_IMAGE1));
-
-    sprintf(tmp,"large (%i x %i)", int(4*setting.win_w), int(4*setting.win_h));
-    screenshot->addItem(new CED_SubSubMenu(tmp,SAVE_IMAGE4));
-
-    sprintf(tmp,"very large (%i x %i)", int(10*setting.win_w), int(10*setting.win_h));
-    screenshot->addItem(new CED_SubSubMenu(tmp,SAVE_IMAGE10));
-
-    sprintf(tmp,"very very large (%i x %i)", int(20*setting.win_w), int(20*setting.win_h));
-    screenshot->addItem(new CED_SubSubMenu(tmp,SAVE_IMAGE20));
-
-    sprintf(tmp,"extrem large (%i x %i)", int(100*setting.win_w), int(100*setting.win_h));
-    screenshot->addItem(new CED_SubSubMenu(tmp,SAVE_IMAGE100));
-
-    CED_SubSubMenu *autoshot=new CED_SubSubMenu("A. shot scale");
-    sprintf(tmp,"original size (%i x %i)", int(setting.win_w), int(setting.win_h));
-    autoshot->addItem(new CED_SubSubMenu(tmp,AUTOSHOT_IMAGE1));
-
-    sprintf(tmp,"large size (%i x %i)", int(4*setting.win_w), int(4*setting.win_h));
-    autoshot->addItem(new CED_SubSubMenu(tmp,AUTOSHOT_IMAGE4));
-
-    sprintf(tmp,"very large size (%i x %i)", int(10*setting.win_w), int(10*setting.win_h));
-    autoshot->addItem(new CED_SubSubMenu(tmp,AUTOSHOT_IMAGE10));
-
-    sprintf(tmp,"very very large size (%i x %i)", int(20*setting.win_w), int(20*setting.win_h));
-    autoshot->addItem(new CED_SubSubMenu(tmp,AUTOSHOT_IMAGE20));
-
-    sprintf(tmp,"extream size (%i x %i)", int(100*setting.win_w), int(100*setting.win_h));
-    autoshot->addItem(new CED_SubSubMenu(tmp,AUTOSHOT_IMAGE100));
-
-    CED_SubMenu *tools=new CED_SubMenu("Tools");
-    tools->addItem(screenshot);
-    tools->addItem(new CED_SubSubMenu("---",0));
-    if(setting.fps){
-        tools->addItem(new CED_SubSubMenu("[X] Show FPS",FPS));
-    }else{
-        tools->addItem(new CED_SubSubMenu("[ ] Show FPS",FPS));
-    }
-    tools->addItem(new CED_SubSubMenu("---",0));
-    if(setting.autoshot) {
-        tools->addItem(new CED_SubSubMenu("[X] Auto shot",AUTOSHOT));
-    }
-    else {
-        tools->addItem(new CED_SubSubMenu("[ ] Auto shot",AUTOSHOT));
-    }
-    tools->addItem(autoshot);
-    ced_menu->addSubMenu(tools);
-
-
-    CED_SubMenu *help=new CED_SubMenu("Help");
-    if(showHelp){
-        help->addItem(new CED_SubSubMenu("[X] Show keyboard shortcuts",HELP));
-    }else{
-        help->addItem(new CED_SubSubMenu("[ ] Show keyboard shortcuts",HELP));
-    }
-    help->addItem(new CED_SubSubMenu("---",0));
-    help->addItem(new CED_SubSubMenu("Contact CED team (hauke.hoelbe@desy.de)",0));
-    ced_menu->addSubMenu(help);
-}
-
 static const int kResizeBorder = 6;
 
 static SDL_HitTestResult SDLCALL ced_window_hit_test(SDL_Window *win, const SDL_Point *pt, void *data){
@@ -4132,8 +1737,7 @@ static SDL_HitTestResult SDLCALL ced_window_hit_test(SDL_Window *win, const SDL_
     return SDL_HITTEST_NORMAL;
 }
 
-static void mainLoop(SDL_GLContext gl_context)
-{
+static void mainLoop(SDL_GLContext gl_context) {
     bool running = true;
     ced_needs_redraw = true;
 
@@ -4249,24 +1853,24 @@ static void mainLoop(SDL_GLContext gl_context)
 }
 
 int main(int argc,char *argv[]){
-#ifndef SDL_PLATFORM_APPLE
-    setenv("SDL_VIDEODRIVER", "wayland", 0);
+    #ifndef SDL_PLATFORM_APPLE
+        setenv("SDL_VIDEODRIVER", "wayland", 0);
 
-    // SDL's Wayland backend initializes xkbcommon directly as part of SDL_Init() to handle
-    // keyboard input. The key4hep stack sets XKB_CONFIG_ROOT with a :, which xkbcommon
-    // interprets as an empty search path entry and fails to create an XKB context, cascading
-    // into SDL Init returning -1. The following code removes this character.
-    const char *xkb = getenv("XKB_CONFIG_ROOT");
+        // SDL's Wayland backend initializes xkbcommon directly as part of SDL_Init() to handle
+        // keyboard input. The key4hep stack sets XKB_CONFIG_ROOT with a :, which xkbcommon
+        // interprets as an empty search path entry and fails to create an XKB context, cascading
+        // into SDL Init returning -1. The following code removes this character.
+        const char *xkb = getenv("XKB_CONFIG_ROOT");
 
-    if (xkb) {
-        std::string s(xkb);
+        if (xkb) {
+            std::string s(xkb);
 
-        if (!s.empty() && s.back() == ':') {
-            s.pop_back();
-            setenv("XKB_CONFIG_ROOT", s.c_str(), 1);
+            if (!s.empty() && s.back() == ':') {
+                s.pop_back();
+                setenv("XKB_CONFIG_ROOT", s.c_str(), 1);
+            }
         }
-    }
-#endif
+    #endif
 
     mm_reset=mm;
     WORLD_SIZE = DEFAULT_WORLD_SIZE ;
@@ -4485,284 +2089,6 @@ int main(int argc,char *argv[]){
 
     reshape(setting.win_w, setting.win_h);
     mainLoop(gl_context);
-    
+
     return 0;
-}
-
-int save_pixmap_as_tga(unsigned char *buffer_all,const char *name,int wi, int hi){
-    //based on: http://www.opengl.org/discussion_boards/ubbthreads.php?ubb=showflat&Number=44286
-
-    int header_size=24;
-    int mem_size = wi*hi*3;
-    //unsigned char tmp;
-    FILE *out_file;
-    unsigned char *header;
-
-    if (!(header = (unsigned char *) calloc(1, header_size))) { return(-1); }
-
-    //write header
-    header[2] = 2;  // uncompressed
-    header[12] = wi & 255;
-    header[13] = wi >> 8;
-    header[14] = hi & 255;
-    header[15] = hi >> 8;
-    header[16] = 24;    // 24 bits per pix
-
-    if (!(out_file = fopen(name, "wb"))) { return(-2); }
-
-    fwrite(header, sizeof(unsigned char), header_size, out_file);
-    fwrite(buffer_all, sizeof(unsigned char), mem_size, out_file);
-
-    fclose(out_file);
-    return(0);
-}
-
-
-int save_pixmap_as_bmp(unsigned char *buffer_all,const char *name,unsigned int wi, unsigned int hi){
-    unsigned int mem_size = wi*hi*3;
-    FILE *out_file;
-    unsigned char *header;
-
-    unsigned int header_size=26;
-
-    cout << endl << "               bmp screenshot width: " << wi << " height: " << hi << endl;
-    if (!(header = (unsigned char *) calloc(1, header_size))) { return(-1); }
-
-    header[0]  = 'B';
-    header[1]  = 'M';
-    header[2]  = (mem_size+header_size)          & 255;
-    header[3]  = ((mem_size+header_size)  >> 8)  & 255;
-    header[4]  = ((mem_size+header_size)  >> 16) & 255;
-    header[5]  = ((mem_size+header_size)  >> 24) & 255;
-    header[6]  = 0;
-    header[7]  = 0;
-    header[8]  = 0;
-    header[9]  = 0;
-    header[10] = header_size;
-    header[11] = 0;
-    header[12] = 0;
-    header[13] = 0;
-    header[14] = 12;
-    header[15] = 0;
-    header[16] = 0;
-    header[17] = 0;
-    header[18] = (unsigned char)(wi & 255);
-    header[19] = (unsigned char)((wi >> 8) & 255);
-    header[20] = (unsigned char)(hi & 255);
-    header[21] = (unsigned char)((hi >> 8) & 255);
-    header[22] = 1;
-    header[23] = 0;
-    header[24] = 24;
-    header[25] = 0;
-
-    std::cout << "height: " << int((header[21] << 8) + header[20]) << endl;
-    std::cout << "wight: " << int((header[19] << 8)+  header[18]) << endl;
-
-    if (!(out_file = fopen(name, "wb"))) { return(-2); }
-
-    fwrite(header, sizeof(unsigned char), header_size, out_file);
-    fwrite(buffer_all, sizeof(unsigned char), mem_size, out_file);
-
-    fclose(out_file);
-    return(0);
-}
-
-void screenshot(const char *, int times)
-{
-    if(times > 100){
-        std::cout << "Sorry 100x100 are the max value" << std::endl ;
-        return;
-    }
-
-    setting.screenshot_sections=times;
-
-
-    //int HEADER_SIZE=24;
-    unsigned char *buffer_all;
-    unsigned char *buffer[100*100];
-
-    //char filename[100];
-
-    int w=(int)window_width;
-    int h=(int)window_height;
-
-    int buf_size = (w*h*3);
-
-    std::cout << "Generating screenshot (" << w*times << "x" << h*times << "):" << std::endl;
-
-    //int buf_size_all = HEADER_SIZE + w*h*3 *times*times;
-
-    int buf_size_all = w*h*3 *times*times;
-
-
-    std::cout << "    Requesting memory ";
-    for(int i=0;i<times*times;i++){
-        std::cout << ".";
-        std::cout.flush();
-        if (!(buffer[i] = (unsigned char *) calloc(1, buf_size)))
-        {
-            return;
-        }
-    }
-    if (!(buffer_all = (unsigned char *) calloc(1, buf_size_all)))
-    {
-        return;
-    }
-    std::cout << " Done" << std::endl;
-
-
-    std::cout << "    Generating image ";
-
-    if(setting.persp == true){
-        glTranslatef(0.0, 0.0, +2000); //HOTFIX!!! TODO: find the place where this translation is made
-        double near_plane=200.;
-        for(int i=0;i<times;i++){
-            for(int j=0;j<times;j++){
-
-                std::cout << ".";
-                std::cout.flush();
-
-                glMatrixMode(GL_PROJECTION);
-                glLoadIdentity();
-
-                glViewport(0,0,w,h);
-
-                if(w >= h){
-                glFrustum((-1*near_plane/2.      + 2*i*(near_plane/2.)/times)*w*1.0/h,
-                          (-1*near_plane/2.      +(i+1)*2*(near_plane/2.)/times)*w*1.0/h,
-                          (-1*(near_plane/2.)    + 2*j*(near_plane/2.)/times),
-                          (-1*(near_plane/2.)    +(j+1)*2*(near_plane/2.)/times),
-                          near_plane ,50000.0*mm.sf*2+50000/(mm.sf*2));
-                }else{
-                glFrustum((-1*near_plane/2.      + 2*i*(near_plane/2.)/times),
-                          (-1*near_plane/2.      +(i+1)*2*(near_plane/2.)/times),
-                          (-1*(near_plane/2.)    + 2*j*(near_plane/2.)/times)*h*1.0/w,
-                          (-1*(near_plane/2.)    +(j+1)*2*(near_plane/2.)/times)*h*1.0/w,
-                          near_plane*h*1./w ,50000.0*mm.sf*2+50000/(mm.sf*2));
-
-                }
-
-                glViewport(0,0,w,h);
-                glMultMatrixf(glm::value_ptr(glm::lookAt(
-                    glm::vec3(0,0,2000),
-                    glm::vec3(0,0,0),
-                    glm::vec3(0,1,0)
-                )));
-                glViewport(0,0,w,h);
-
-                glMatrixMode(GL_MODELVIEW);
-                write_world_into_front_buffer();
-
-                glViewport(0,0,w,h);
-
-                glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-                glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buffer[i+j*times]);
-
-                glMatrixMode(GL_MODELVIEW);
-            }
-        }
-     }else{
-        double near_plane=200./(WORLD_SIZE/10);
-
-        for(int i=0;i<times;i++){
-            for(int j=0;j<times;j++){
-
-                std::cout << ".";
-                std::cout.flush();
-
-                glMatrixMode(GL_PROJECTION);
-                glLoadIdentity();
-
-                glViewport(0,0,w,h);
-
-                if(w >= h){
-
-
-                glOrtho((-1*near_plane/2.      + 2*i*(near_plane/2.)/times)*w*1.0/h*WORLD_SIZE,
-                          (-1*near_plane/2.      +(i+1)*2*(near_plane/2.)/times)*w*1.0/h*WORLD_SIZE,
-                          (-1*(near_plane/2.)    + 2*j*(near_plane/2.)/times)*WORLD_SIZE,
-                          (-1*(near_plane/2.)    +(j+1)*2*(near_plane/2.)/times)*WORLD_SIZE,
-                          near_plane ,(50000.0*mm.sf*2+50000/(mm.sf*2)));
-                }else{
-
-                //near_plane*=1./(h*1./w);
-                double tmp2=WORLD_SIZE;
-                WORLD_SIZE*=w*1./h;
-                glOrtho((-1*near_plane/2.      + 2*i*(near_plane/2.)/times)*WORLD_SIZE,
-                          (-1*near_plane/2.      +(i+1)*2*(near_plane/2.)/times)*WORLD_SIZE,
-                          (-1*(near_plane/2.)    + 2*j*(near_plane/2.)/times)*h*1.0/w*WORLD_SIZE,
-                          (-1*(near_plane/2.)    +(j+1)*2*(near_plane/2.)/times)*h*1.0/w*WORLD_SIZE,
-                          near_plane,(50000.0*mm.sf*2+50000/(mm.sf*2)));
-
-                WORLD_SIZE=tmp2;
-
-                }
-                glViewport(0,0,w,h);
-                glMultMatrixf(glm::value_ptr(glm::lookAt(
-                    glm::vec3(0,0,2000),
-                    glm::vec3(0,0,0),
-                    glm::vec3(0,1,0)
-                )));
-                glViewport(0,0,w,h);
-                glMatrixMode(GL_MODELVIEW);
-                write_world_into_front_buffer();
-
-                glViewport(0,0,w,h);
-
-                glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-                glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buffer[i+j*times]);
-
-                glMatrixMode(GL_MODELVIEW);
-            }
-        }
-    }
-    std::cout << " Done" << std::endl;
-
-    for(int k=0;k<times;k++){
-        for(int l=0;l<h;l++){
-            for(int j=0;j<times;j++){
-                for(int i=0; i < w*3; i++){
-                    buffer_all[i+w*3*j+l*w*3*times+k*times*w*h*3]=buffer[j+times*k][i+l*w*3];
-                }
-            }
-        }
-    }
-
-    //RGB -> BGR
-    char tmp;
-    for(int j=0;j<buf_size_all;j+=3){
-        tmp = buffer_all[j];
-        buffer_all[j] = buffer_all[j+2];
-        buffer_all[j+2] = tmp;
-    }
-
-    numpict++;
-    std::ostringstream foutname;
-    char *imgfile;
-    imgfile = getenv ( "CED_IMAGEFILE" );
-    if(imgfile != NULL){
-      foutname << imgfile << "-" << numpict << ".tga" << std::ends;
-    }else{
-      foutname << "glced-" << numpict << ".tga" << std::ends;
-    }
-    std::string cfout=foutname.str();
-    int spret=save_pixmap_as_tga(buffer_all, cfout.c_str(), w*times, h*times);
-//    int spret=save_pixmap_as_bmp(buffer_all, cfout.c_str(), w*times, h*times);
-    if ( spret == 0 ) {
-      std::cout << "Imagefile was written in " << cfout << std::endl ;
-    }
-    else {
-      std::cout << "Failed to write file to " << cfout << std::endl;
-    }
-
-    std::cout << "    Clean memory ";
-    for(int i=0;i<times*times;i++){
-        std::cout << ".";
-        std::cout.flush();
-        free(buffer[i]);
-    }
-    free(buffer_all);
-    std::cout << " Done" << std::endl;
-
-    setting.screenshot_sections=1;
 }
