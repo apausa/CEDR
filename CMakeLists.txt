@@ -122,18 +122,18 @@ IF( CED_SERVER )
       ./src/server/draw/geometry/fg_geometry.cc
       ./src/server/draw/geometry/partial_cylinder.cc
       ./src/server/draw/fisheye.cc
-      ./src/server/draw/render/color.cc
-      ./src/server/draw/render/render_hit.cc
-      ./src/server/draw/render/render_line.cc
-      ./src/server/draw/render/render_geotube.cc
-      ./src/server/draw/render/render_geocylinder.cc
-      ./src/server/draw/render/render_geocylinder_r.cc
-      ./src/server/draw/render/render_ellipsoid_r.cc
-      ./src/server/draw/render/render_cluellipse_r.cc
-      ./src/server/draw/render/render_geobox.cc
-      ./src/server/draw/render/render_geobox_r.cc
-      ./src/server/draw/render/render_cone_r.cc
-      ./src/server/draw/render/render_geobox_r_solid.cc
+      ./src/server/draw/elements/color.cc
+      ./src/server/draw/elements/hit.cc
+      ./src/server/draw/elements/line.cc
+      ./src/server/draw/elements/geotube.cc
+      ./src/server/draw/elements/geocylinder.cc
+      ./src/server/draw/elements/geocylinder_r.cc
+      ./src/server/draw/elements/ellipsoid_r.cc
+      ./src/server/draw/elements/cluellipse_r.cc
+      ./src/server/draw/elements/geobox.cc
+      ./src/server/draw/elements/geobox_r.cc
+      ./src/server/draw/elements/cone_r.cc
+      ./src/server/draw/elements/geobox_r_solid.cc
     )
 
     SET_TARGET_PROPERTIES( glced PROPERTIES

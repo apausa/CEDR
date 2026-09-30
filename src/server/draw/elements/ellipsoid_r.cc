@@ -1,6 +1,6 @@
 #include "../geometry/fg_geometry.h"
 
-#include "render.h"
+#include "elements.h"
 
 /** Draws an ellipsoid 
  * Code based on http://www.opengl.org/discussion_boards/ubbthreads.php?ubb=showflat&Number=242991

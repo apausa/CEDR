@@ -1,6 +1,6 @@
 #include "../geometry/fg_geometry.h"
 
-#include "render.h"
+#include "elements.h"
 #include "../fisheye.h"
 
 /*
