@@ -15,7 +15,7 @@
 #include "menu.h"
 #include "overlay.h"
 #include "input.h"
-#include "layers.h"
+#include "draw/layers.h"
 #include "selection.h"
 
 using namespace std;

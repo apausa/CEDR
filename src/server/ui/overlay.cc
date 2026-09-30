@@ -21,7 +21,7 @@
 #include <gl_font.h>
 
 #include "overlay.h"
-#include "layers.h"
+#include "draw/layers.h"
 
 using namespace std;
 
