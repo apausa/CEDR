@@ -47,8 +47,8 @@
 
 
 #include <ced_menu.h>
-#include "settings.h"
-#include "screenshot.h"
+#include "io/settings.h"
+#include "io/screenshot.h"
 #include "ui/menu.h"
 
 using namespace std;
