@@ -564,14 +564,6 @@ static void reshape(int w,int h){
     }
 
 
- //   //hauke
- //   if(showHelp == 1){
- //       glutSetWindow (subWindow);
- //       glutReshapeWindow (int(window_width-10),int(window_height/4));
- //   }
-
-
-
     //buildMainMenu();
     buildLayerMenus();
 }
@@ -612,15 +604,6 @@ static void input_data(void *data){
     }
 }
 
-void subReshape (int w, int h)
-{
-  glViewport (0, 0, w, h);
-  glMatrixMode (GL_PROJECTION);
-  glLoadIdentity ();
-  glOrtho(0.0F, 1.0F, 0.0F, 1.0F, -1.0, 1.0);
-};
-
-
 void toggleHelpWindow(void){ //hauke
     if(showHelp == 1){
         showHelp=0;
@@ -628,26 +611,6 @@ void toggleHelpWindow(void){ //hauke
         showHelp=1;
     }
     ced_needs_redraw = true;
-//    mainWindow=glutGetWindow();
-//
-//    if(showHelp == 1){
-//        glutDestroyWindow(subWindow);
-//        showHelp=0;
-//    }else if(showHelp == 0){
-//        subWindow=glutCreateSubWindow(mainWindow,5,5,int(window_width-10),int(window_height/4.0));
-//
-//        glutDisplayFunc(subDisplay);
-//        glutReshapeFunc(subReshape);
-//
-//        glutKeyboardFunc(keypressed);
-//        glutSpecialFunc(SpecialKey);
-//
-//        glutPostRedisplay();
-//
-//        glutSetWindow(mainWindow);
-//        showHelp=1;
-//    }
-//    glutSetWindow(mainWindow);
 }
 
 void updateLayerEntryInPopupMenu(int){ //id is layer id, not menu id!
