@@ -20,7 +20,7 @@
 #include <ced_menu.h>
 #include <gl_font.h>
 
-#include "hud.h"
+#include "overlay.h"
 #include "layers.h"
 
 using namespace std;

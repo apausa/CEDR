@@ -28,9 +28,9 @@
 #include <fg_geometry.h>
 #include <SDL3/SDL.h>
 #include <gl_font.h>
-#include "font/hud.h"
 #include "layers.h"
 #include "ui/input.h"
+#include "ui/overlay.h"
 #include "ui/selection.h"
 
 #include <sys/select.h>

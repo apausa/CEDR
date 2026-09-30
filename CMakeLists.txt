@@ -113,13 +113,14 @@ IF( CED_SERVER )
       ./src/server/element_registry.cc
       ./src/server/settings.cc
       ./src/server/screenshot.cc
-      ./src/server/font/gl_font.cc
-      ./src/server/font/hud.cc
+      ./src/server/layers.cc
+      ./src/server/gl_font.cc
       ./src/server/geometry/fg_geometry.cc
       ./src/server/geometry/cylinder_geometry.cc
       ./src/server/geometry/fisheye.cc
       ./src/server/ui/input.cc
       ./src/server/ui/menu.cc
+      ./src/server/ui/overlay.cc
       ./src/server/ui/selection.cc
       ./src/server/render/color.cc
       ./src/server/render/render_hit.cc

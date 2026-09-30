@@ -13,7 +13,7 @@
 #include <ced_menu.h>
 
 #include "menu.h"
-#include "font/hud.h"
+#include "overlay.h"
 #include "input.h"
 #include "layers.h"
 #include "selection.h"
