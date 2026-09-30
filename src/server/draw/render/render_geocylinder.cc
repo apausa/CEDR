@@ -1,7 +1,7 @@
 #include <fg_geometry.h>
 
 #include "render.h"
-#include "../geometry/fisheye.h"
+#include "../fisheye.h"
 
 /*
  * GeoCylinder

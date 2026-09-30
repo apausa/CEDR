@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "render.h"
-#include "../geometry/fisheye.h"
+#include "../fisheye.h"
 
 /*
  * GeoBoxR 

@@ -1,5 +1,5 @@
 #include "render.h"
-#include "../geometry/fisheye.h"
+#include "../fisheye.h"
 #include "../ui/selection.h"
 
 /*
