@@ -20,6 +20,7 @@
 
 #include "overlay.h"
 #include "layers.h"
+#include "utils/helpers.h"
 
 using namespace std;
 
@@ -27,7 +28,6 @@ using namespace std;
 extern int animation_start_time;
 extern int animate_layer;
 extern float WORLD_SIZE;
-int isLayerVisible(int x);
 
 void printFPS(void){
     //calculate fps:
