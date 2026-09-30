@@ -29,6 +29,7 @@
 #include <SDL3/SDL.h>
 #include <gl_font.h>
 #include "font/hud.h"
+#include "layers.h"
 #include "ui/input.h"
 #include "ui/selection.h"
 
@@ -58,32 +59,6 @@ int animate_layer = -1;
 int last_selected_layer;
 extern CEDsettings setting;
 CEDsettings setting_old[5];
-char layerDescription[CED_MAX_LAYER][CED_MAX_LAYER_CHAR];
-//const char layer_keys[] = {'0','1', '2','3','4','5','6','7','8','9',')', '!', '@', '#', '$', '%', '^', '&', '*', '(', 't', 'y', 'u', 'i', 'o'};
-const char layer_keys[] = { DATALAYER_SHORTKEY_00, DATALAYER_SHORTKEY_01, DATALAYER_SHORTKEY_02, DATALAYER_SHORTKEY_03, DATALAYER_SHORTKEY_04, DATALAYER_SHORTKEY_05, DATALAYER_SHORTKEY_06, DATALAYER_SHORTKEY_07, DATALAYER_SHORTKEY_08, DATALAYER_SHORTKEY_09, DATALAYER_SHORTKEY_10, DATALAYER_SHORTKEY_11, DATALAYER_SHORTKEY_12, DATALAYER_SHORTKEY_13, DATALAYER_SHORTKEY_14, DATALAYER_SHORTKEY_15, DATALAYER_SHORTKEY_16, DATALAYER_SHORTKEY_17, DATALAYER_SHORTKEY_18, DATALAYER_SHORTKEY_19, DATALAYER_SHORTKEY_20, DATALAYER_SHORTKEY_21, DATALAYER_SHORTKEY_22, DATALAYER_SHORTKEY_23, DATALAYER_SHORTKEY_24};
-
-const char detec_layer_keys[] = {
-    DETECTORLAYER_SHORTKEY_00, DETECTORLAYER_SHORTKEY_01,
-    DETECTORLAYER_SHORTKEY_02, DETECTORLAYER_SHORTKEY_03,
-    DETECTORLAYER_SHORTKEY_04, DETECTORLAYER_SHORTKEY_05,
-    DETECTORLAYER_SHORTKEY_06, DETECTORLAYER_SHORTKEY_07,
-    DETECTORLAYER_SHORTKEY_08, DETECTORLAYER_SHORTKEY_09,
-    DETECTORLAYER_SHORTKEY_10, DETECTORLAYER_SHORTKEY_11,
-    DETECTORLAYER_SHORTKEY_12, DETECTORLAYER_SHORTKEY_13,
-    DETECTORLAYER_SHORTKEY_14, DETECTORLAYER_SHORTKEY_15,
-    DETECTORLAYER_SHORTKEY_16, DETECTORLAYER_SHORTKEY_17,
-    DETECTORLAYER_SHORTKEY_18, DETECTORLAYER_SHORTKEY_19,
-    DETECTORLAYER_SHORTKEY_20, DETECTORLAYER_SHORTKEY_21,
-    DETECTORLAYER_SHORTKEY_22, DETECTORLAYER_SHORTKEY_23,
-    DETECTORLAYER_SHORTKEY_24, DETECTORLAYER_SHORTKEY_25,
-    DETECTORLAYER_SHORTKEY_26, DETECTORLAYER_SHORTKEY_27,
-    DETECTORLAYER_SHORTKEY_28, DETECTORLAYER_SHORTKEY_29,
-    DETECTORLAYER_SHORTKEY_30, DETECTORLAYER_SHORTKEY_31,
-    DETECTORLAYER_SHORTKEY_32, DETECTORLAYER_SHORTKEY_33,
-    DETECTORLAYER_SHORTKEY_34, DETECTORLAYER_SHORTKEY_35,
-    DETECTORLAYER_SHORTKEY_36, DETECTORLAYER_SHORTKEY_37,
-    DETECTORLAYER_SHORTKEY_38, DETECTORLAYER_SHORTKEY_39,
-};
 
 static int subSave;
 static int subLoad;
@@ -162,7 +137,7 @@ static void init(void){
     //glDepthFunc(GL_LESS);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //default
 
-//glEnable(GL_POLYGON_STIPPLE);
+    //glEnable(GL_POLYGON_STIPPLE);
 
 
     //glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
@@ -213,13 +188,13 @@ static void axe_arrow(void){
 }
 
 static void display_world(void){
-/*   static GLfloat axe[][3]={ */
-/*     { 0., 0., 0., }, */
-/*     { WORLD_SIZE/2, 0., 0. }, */
-/*     { 0., WORLD_SIZE/2, 0. }, */
-/*     { 0., 0., WORLD_SIZE/2 } */
-/*   }; */
-  //  unsigned i;
+    /*   static GLfloat axe[][3]={ */
+    /*     { 0., 0., 0., }, */
+    /*     { WORLD_SIZE/2, 0., 0. }, */
+    /*     { 0., WORLD_SIZE/2, 0. }, */
+    /*     { 0., 0., WORLD_SIZE/2 } */
+    /*   }; */
+    //  unsigned i;
     if(setting.show_axes == false){
         return;
     }
@@ -340,55 +315,55 @@ static void display(void){
 }
 
 void write_world_into_front_buffer(void){
-///////
-//   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    glPushMatrix();
-//
-//    // TODO: fix it!
-//    // in case of no rotate, in some cases it could get strange
-//    // lines in fisheye view from (0,0,0) to (-inf, -inf,x)
-//    setting.zoom=mm.sf;
-//    glScalef(mm.sf,mm.sf,mm.sf); //zoom
-//
-//    glRotatef(mm.va,1.,0.,0.); //rotate
-//    glRotatef(mm.ha,0.,1.0,0.); //rotate
-//    glTranslatef(-mm.mv.x,-mm.mv.y,-mm.mv.z); //move
-//
-//    if(setting.picking_highlight==true && select_nothing == false){
-//        glColor3f(1,0,0);
-//        glPointSize(10);
-//        glBegin(GL_POINTS);
-//        //cout<< "point: " << pick_point.x << ", " << pick_point.y << ", " << pick_point.z << endl;
-//        glVertex3f(pick_point.x,pick_point.y,pick_point.z);
-//        glEnd();
-//    }
-//    // draw static objects
-//    display_world(); //only axes?
-//
-//    // draw elements (hits + detector)
-//    ced_prepare_objmap();
-//    ced_do_draw_event();
-//
-//
-//    if(showHelp == 1){
-//        printShortcuts();
-//    }
-//
-//
-//    glDisable(GL_LIGHTING);
-//    ced_menu->draw();
-//    popupmenu->draw();
-//    printFPS();
-//
-//    if(setting.light==true){
-//        glEnable(GL_LIGHTING);
-//    }
-//
-//    glutSwapBuffers();
-//
-//    glPopMatrix();
-//
-///////
+    ///////
+    //   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //    glPushMatrix();
+    //
+    //    // TODO: fix it!
+    //    // in case of no rotate, in some cases it could get strange
+    //    // lines in fisheye view from (0,0,0) to (-inf, -inf,x)
+    //    setting.zoom=mm.sf;
+    //    glScalef(mm.sf,mm.sf,mm.sf); //zoom
+    //
+    //    glRotatef(mm.va,1.,0.,0.); //rotate
+    //    glRotatef(mm.ha,0.,1.0,0.); //rotate
+    //    glTranslatef(-mm.mv.x,-mm.mv.y,-mm.mv.z); //move
+    //
+    //    if(setting.picking_highlight==true && select_nothing == false){
+    //        glColor3f(1,0,0);
+    //        glPointSize(10);
+    //        glBegin(GL_POINTS);
+    //        //cout<< "point: " << pick_point.x << ", " << pick_point.y << ", " << pick_point.z << endl;
+    //        glVertex3f(pick_point.x,pick_point.y,pick_point.z);
+    //        glEnd();
+    //    }
+    //    // draw static objects
+    //    display_world(); //only axes?
+    //
+    //    // draw elements (hits + detector)
+    //    ced_prepare_objmap();
+    //    ced_do_draw_event();
+    //
+    //
+    //    if(showHelp == 1){
+    //        printShortcuts();
+    //    }
+    //
+    //
+    //    glDisable(GL_LIGHTING);
+    //    ced_menu->draw();
+    //    popupmenu->draw();
+    //    printFPS();
+    //
+    //    if(setting.light==true){
+    //        glEnable(GL_LIGHTING);
+    //    }
+    //
+    //    glutSwapBuffers();
+    //
+    //    glPopMatrix();
+    //
+    ///////
     glMatrixMode(GL_PROJECTION);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -442,15 +417,15 @@ void write_world_into_front_buffer(void){
     //cout << "mm.sf: " << mm.sf << "hinterer clipping plane: " << 5000*2.0*mm.sf << std::endl;
     //gluPerspective(60,window_width/window_height,100*2.0*mm.sf,5000*2.0*mm.sf);
 
-//    std::cout  << "clipping planes: " << 200*2.0*mm.sf << " bis " << 5000*2.0*mm.sf << std::endl;
-//
-//    gluPerspective(60,window_width/window_height,200*2.0*mm.sf,5000*2.0*mm.sf);
-//        glMatrixMode( GL_MODELVIEW );
-//
-//        glLoadIdentity();
-//        gluLookAt  (0,0,2000,    0,0,0,    0,1,0);
-//
-//
+    //    std::cout  << "clipping planes: " << 200*2.0*mm.sf << " bis " << 5000*2.0*mm.sf << std::endl;
+    //
+    //    gluPerspective(60,window_width/window_height,200*2.0*mm.sf,5000*2.0*mm.sf);
+    //        glMatrixMode( GL_MODELVIEW );
+    //
+    //        glLoadIdentity();
+    //        gluLookAt  (0,0,2000,    0,0,0,    0,1,0);
+    //
+    //
 
     if(setting.light==true){
         glEnable(GL_LIGHTING);
@@ -577,11 +552,11 @@ void idle(void){
 static void toggle_layer(unsigned l){
     if(l > CED_MAX_LAYER-1){ return; }
 
-//    if(ced_visible_layers[l]){
-//        ced_visible_layers[l]=false;
-//    }else{
-//        ced_visible_layers[l]=true;
-//    }
+    //    if(ced_visible_layers[l]){
+    //        ced_visible_layers[l]=false;
+    //    }else{
+    //        ced_visible_layers[l]=true;
+    //    }
 
 
     if(setting.layer[l]){
@@ -614,43 +589,27 @@ void toggleHelpWindow(void){ //hauke
 }
 
 void updateSaveLoadMenu(int){ //id is save id, not menu id!
-//    struct stat s;
-//
-//
-//    const char *home = getenv("HOME");
-//    char filename[1000];
-//    char menuStr[1000];
-//    snprintf(filename, 1000, "%s/.glced_cfg/settings%i", home, id);
-//    if(stat(filename,&s) == 0){
-//        snprintf(menuStr,1000,"Slot %i, created: %s",id,ctime(&s.st_mtime));
-//    }else{
-//        snprintf(menuStr,1000,"Slot %i, %s",id,"Empty");
-//    }
-//
-//    glutSetMenu(subSave);
-//    glutChangeToMenuEntry(id,menuStr, SAVE1+id-1);
-//
-//    glutSetMenu(subLoad);
-//    glutChangeToMenuEntry(id,menuStr, LOAD1+id-1);
-//
-//    //std::cout << menuStr << std::endl;
+    //    struct stat s;
+    //
+    //
+    //    const char *home = getenv("HOME");
+    //    char filename[1000];
+    //    char menuStr[1000];
+    //    snprintf(filename, 1000, "%s/.glced_cfg/settings%i", home, id);
+    //    if(stat(filename,&s) == 0){
+    //        snprintf(menuStr,1000,"Slot %i, created: %s",id,ctime(&s.st_mtime));
+    //    }else{
+    //        snprintf(menuStr,1000,"Slot %i, %s",id,"Empty");
+    //    }
+    //
+    //    glutSetMenu(subSave);
+    //    glutChangeToMenuEntry(id,menuStr, SAVE1+id-1);
+    //
+    //    glutSetMenu(subLoad);
+    //    glutChangeToMenuEntry(id,menuStr, LOAD1+id-1);
+    //
+    //    //std::cout << menuStr << std::endl;
 }
-
-
-void addLayerDescriptionToMenu(int id, char * str){
-    if(id < 0 || id >= CED_MAX_LAYER){
-        printf("Warning: Layer id out of range\n");
-        return;
-    }
-    strncpy(layerDescription[id], str,CED_MAX_LAYER_CHAR-1);
-}
-
-void print_layer_text(CED_TEXT *obj){
-    addLayerDescriptionToMenu(obj->id, obj->text);
-}
-
-//end hauke
-
 
 void update_cut_angle_menu(void){
     return;
@@ -797,66 +756,66 @@ void selectFromMenu(int id){ //hauke
 
 
 
-//        case BGCOLOR_GAINSBORO:
-//            set_bg_color(0.862745,0.862745,0.862745,0);
-//            //set_bg_color(0.862745,0.862745,0.862745,0);
-//            break;
-//
-//        case BGCOLOR_LIGHTGREY:
-//            set_bg_color(0.827451,0.827451,0.827451,0);
-//            break;
-//
-//        case BGCOLOR_DARKGRAY:
-//            set_bg_color(0.662745,0.662745,0.662745,0);
-//            break;
-//
-//        case BGCOLOR_GRAY:
-//            set_bg_color(0.501961,0.501961,0.501961,0);
-//            break;
-//
-//        case BGCOLOR_SILVER:
-//            set_bg_color(0.7529,0.7529,0.7529,0);
-//            break;
-//
-//        case BGCOLOR_DIMGRAY:
-//            set_bg_color(0.4118,0.4118,0.4118,0);
-//            break;
-//
-//        case BGCOLOR_LIGHTSTEELBLUE:
-//            set_bg_color(0.6902,0.7686 ,0.8706,0);
-//            break;
-//
-//        case BGCOLOR_STEELBLUE:
-//            set_bg_color(0.2745,0.5098,0.70588,0);
-//            break;
-//
-//        case BGCOLOR_SEAGREEN:
-//            set_bg_color(0.18039,0.54509,0.34117,0);
-//            break;
-//
-//        case BGCOLOR_ORANGE:
-//            set_bg_color(1,0.647,0,0);
-//            break;
-//
-//        case BGCOLOR_YELLOW:
-//            set_bg_color(1,1,0,0);
-//            break;
-//
-//        case BGCOLOR_VIOLET:
-//            set_bg_color(0.9333,0.5098,0.9333,0);
-//            break;
-//
-//        case BGCOLOR_BLACK:
-//            set_bg_color(0,0,0,0);
-//            break;
-//
-//        case BGCOLOR_BLUE:
-//            set_bg_color(0,0.2,0.4,0);
-//            break;
-//
-//        case BGCOLOR_WHITE:
-//            set_bg_color(1,1,1,0);
-//            break;
+    //        case BGCOLOR_GAINSBORO:
+    //            set_bg_color(0.862745,0.862745,0.862745,0);
+    //            //set_bg_color(0.862745,0.862745,0.862745,0);
+    //            break;
+    //
+    //        case BGCOLOR_LIGHTGREY:
+    //            set_bg_color(0.827451,0.827451,0.827451,0);
+    //            break;
+    //
+    //        case BGCOLOR_DARKGRAY:
+    //            set_bg_color(0.662745,0.662745,0.662745,0);
+    //            break;
+    //
+    //        case BGCOLOR_GRAY:
+    //            set_bg_color(0.501961,0.501961,0.501961,0);
+    //            break;
+    //
+    //        case BGCOLOR_SILVER:
+    //            set_bg_color(0.7529,0.7529,0.7529,0);
+    //            break;
+    //
+    //        case BGCOLOR_DIMGRAY:
+    //            set_bg_color(0.4118,0.4118,0.4118,0);
+    //            break;
+    //
+    //        case BGCOLOR_LIGHTSTEELBLUE:
+    //            set_bg_color(0.6902,0.7686 ,0.8706,0);
+    //            break;
+    //
+    //        case BGCOLOR_STEELBLUE:
+    //            set_bg_color(0.2745,0.5098,0.70588,0);
+    //            break;
+    //
+    //        case BGCOLOR_SEAGREEN:
+    //            set_bg_color(0.18039,0.54509,0.34117,0);
+    //            break;
+    //
+    //        case BGCOLOR_ORANGE:
+    //            set_bg_color(1,0.647,0,0);
+    //            break;
+    //
+    //        case BGCOLOR_YELLOW:
+    //            set_bg_color(1,1,0,0);
+    //            break;
+    //
+    //        case BGCOLOR_VIOLET:
+    //            set_bg_color(0.9333,0.5098,0.9333,0);
+    //            break;
+    //
+    //        case BGCOLOR_BLACK:
+    //            set_bg_color(0,0,0,0);
+    //            break;
+    //
+    //        case BGCOLOR_BLUE:
+    //            set_bg_color(0,0.2,0.4,0);
+    //            break;
+    //
+    //        case BGCOLOR_WHITE:
+    //            set_bg_color(1,1,1,0);
+    //            break;
 
         case BGCOLOR_USER:
             set_bg_color(userDefinedBGColor[0],userDefinedBGColor[1], userDefinedBGColor[2], userDefinedBGColor[3]);
@@ -1443,18 +1402,18 @@ void selectFromMenu(int id){ //hauke
             setting.detector_trans[last_selected_layer- NUMBER_DATA_LAYER]=1.0;
             break;
 
-//        case FULLSCREEN:
-//////            glutDestroyWindow(mainWindow);;
-//////            glutGameModeString("1280x1024:32@60");
-//////            glutEnterGameMode();
-////            if(fullscreen == false){
-////                glutFullScreen();
-////                fullscreen = true;
-////            }else{
-////                fullscreen = false;
-////                reshape(setting.win_w, setting.win_h);
-////            }
-//
+    //        case FULLSCREEN:
+    //////            glutDestroyWindow(mainWindow);;
+    //////            glutGameModeString("1280x1024:32@60");
+    //////            glutEnterGameMode();
+    ////            if(fullscreen == false){
+    ////                glutFullScreen();
+    ////                fullscreen = true;
+    ////            }else{
+    ////                fullscreen = false;
+    ////                reshape(setting.win_w, setting.win_h);
+    ////            }
+    //
         case AXES:
             if(setting.show_axes){
                 setting.show_axes= false;
@@ -1502,7 +1461,7 @@ void selectFromMenu(int id){ //hauke
             break;
 
         case GRAFIC_TRANS:
-/*
+    /*
             if(graphic[1] == 1){
                 //printf("Transparency  is now off\n");
                 graphic[1] = 0;
@@ -1511,7 +1470,7 @@ void selectFromMenu(int id){ //hauke
                 graphic[1] = 1;
             }
 
-*/
+    */
 
             if(setting.trans == true){
                 //printf("Transparency  is now off\n");
@@ -1543,8 +1502,8 @@ void selectFromMenu(int id){ //hauke
                  GLfloat light0_spec[] = {1, 1, 1, 0.5};
                  GLfloat light0_ambi[] = {1, 1, 1, 0.5};
                  GLfloat light0_diff[] = {1, 1, 1, 0.5};
-//      mm.ha=mm.ha_start+(x-mouse_x)*180./window_width;
-//      mm.va=mm.va_start+(y-mouse_y)*180./window_height;
+    //      mm.ha=mm.ha_start+(x-mouse_x)*180./window_width;
+    //      mm.va=mm.va_start+(y-mouse_y)*180./window_height;
 
 
                  GLfloat light0_pos[] = {20000, 20000, 20000};
@@ -1561,11 +1520,11 @@ void selectFromMenu(int id){ //hauke
                  //GLfloat angle[] = {30};
                  //GLfloat light0_ambi[]= {0.5, 0.5, 0.5, 0.5};
 
-/////////////////
+    /////////////////
 
 
 
-///////////////////
+    ///////////////////
 
 
                  glLightfv(GL_LIGHT0, GL_SPECULAR, light0_spec);
@@ -1753,7 +1712,6 @@ void selectFromMenu(int id){ //hauke
 
 }
 
-
 static const int kResizeBorder = 6;
 
 static SDL_HitTestResult SDLCALL ced_window_hit_test(SDL_Window *win, const SDL_Point *pt, void *data){
@@ -1779,8 +1737,7 @@ static SDL_HitTestResult SDLCALL ced_window_hit_test(SDL_Window *win, const SDL_
     return SDL_HITTEST_NORMAL;
 }
 
-static void mainLoop(SDL_GLContext gl_context)
-{
+static void mainLoop(SDL_GLContext gl_context) {
     bool running = true;
     ced_needs_redraw = true;
 
@@ -1896,24 +1853,24 @@ static void mainLoop(SDL_GLContext gl_context)
 }
 
 int main(int argc,char *argv[]){
-#ifndef SDL_PLATFORM_APPLE
-    setenv("SDL_VIDEODRIVER", "wayland", 0);
+    #ifndef SDL_PLATFORM_APPLE
+        setenv("SDL_VIDEODRIVER", "wayland", 0);
 
-    // SDL's Wayland backend initializes xkbcommon directly as part of SDL_Init() to handle
-    // keyboard input. The key4hep stack sets XKB_CONFIG_ROOT with a :, which xkbcommon
-    // interprets as an empty search path entry and fails to create an XKB context, cascading
-    // into SDL Init returning -1. The following code removes this character.
-    const char *xkb = getenv("XKB_CONFIG_ROOT");
+        // SDL's Wayland backend initializes xkbcommon directly as part of SDL_Init() to handle
+        // keyboard input. The key4hep stack sets XKB_CONFIG_ROOT with a :, which xkbcommon
+        // interprets as an empty search path entry and fails to create an XKB context, cascading
+        // into SDL Init returning -1. The following code removes this character.
+        const char *xkb = getenv("XKB_CONFIG_ROOT");
 
-    if (xkb) {
-        std::string s(xkb);
+        if (xkb) {
+            std::string s(xkb);
 
-        if (!s.empty() && s.back() == ':') {
-            s.pop_back();
-            setenv("XKB_CONFIG_ROOT", s.c_str(), 1);
+            if (!s.empty() && s.back() == ':') {
+                s.pop_back();
+                setenv("XKB_CONFIG_ROOT", s.c_str(), 1);
+            }
         }
-    }
-#endif
+    #endif
 
     mm_reset=mm;
     WORLD_SIZE = DEFAULT_WORLD_SIZE ;

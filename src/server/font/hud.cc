@@ -21,6 +21,7 @@
 #include <gl_font.h>
 
 #include "hud.h"
+#include "layers.h"
 
 using namespace std;
 
@@ -28,9 +29,6 @@ using namespace std;
 extern int animation_start_time;
 extern int animate_layer;
 extern float WORLD_SIZE;
-extern char layerDescription[CED_MAX_LAYER][CED_MAX_LAYER_CHAR];
-extern const char layer_keys[];
-extern const char detec_layer_keys[];
 int isLayerVisible(int x);
 
 /**

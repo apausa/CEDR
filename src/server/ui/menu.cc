@@ -15,6 +15,7 @@
 #include "menu.h"
 #include "font/hud.h"
 #include "input.h"
+#include "layers.h"
 #include "selection.h"
 
 using namespace std;
@@ -29,8 +30,6 @@ extern CED_Menu *ced_menu;
 extern CED_PopUpMenu *popupmenu;
 extern CED_SubSubMenu *detectorlayermenu;
 extern CED_SubSubMenu *datalayermenu;
-extern char layerDescription[CED_MAX_LAYER][CED_MAX_LAYER_CHAR];
-extern const char layer_keys[];
 extern double fisheye_alpha;
 extern int showHelp;
 extern float userDefinedBGColor[];
