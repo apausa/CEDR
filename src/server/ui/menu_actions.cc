@@ -19,6 +19,7 @@
 #include "ui/menu.h"
 #include "ui/selection.h"
 #include "render.h"
+#include "utils/helpers.h"
 
 using namespace std;
 
@@ -34,14 +35,30 @@ extern float FISHEYE_WORLD_SIZE;
 extern double fisheye_alpha;
 
 extern void (*idle_func)(void);
-void idle(void);
-
-int isLayerVisible(int x);
-void set_world_size(float length);
-void set_bg_color(float one, float two, float three, float four);
-void toggle_layer(unsigned l);
 
 CEDsettings setting_old[5];
+
+static void idle(void){
+    ced_needs_redraw = true;
+}
+
+static void toggle_layer(unsigned l){
+    if(l > CED_MAX_LAYER-1){ return; }
+
+    //    if(ced_visible_layers[l]){
+    //        ced_visible_layers[l]=false;
+    //    }else{
+    //        ced_visible_layers[l]=true;
+    //    }
+
+
+    if(setting.layer[l]){
+        setting.layer[l]=false;
+    }else{
+        setting.layer[l]=true;
+    }
+
+}
 
 void update_cut_angle_menu(void){
     return;
