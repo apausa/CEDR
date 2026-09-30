@@ -110,13 +110,14 @@ IF( CED_SERVER )
     ADD_EXECUTABLE(
       glced
       ./src/server/glced.cc
+      ./src/server/render.cc
+      ./src/server/cli.cc
       ./src/server/io/screenshot.cc
       ./src/server/third_party/gl_font.cc
       ./src/server/third_party/fg_geometry.cc
       ./src/server/ui/input.cc
       ./src/server/ui/menu.cc
       ./src/server/ui/menu_actions.cc
-      ./src/server/ui/render.cc
       ./src/server/ui/overlay.cc
       ./src/server/ui/selection.cc
       ./src/server/ui/layers.cc
