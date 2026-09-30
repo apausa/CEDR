@@ -1,9 +1,9 @@
 #include <fg_geometry.h>
 
 #include "render.h"
-#include "../geometry/fisheye.h"
+#include "../fisheye.h"
 #include "../ui/selection.h"
-#include "../geometry/cylinder_geometry.h"
+#include "../geometry/partial_cylinder.h"
 
 void ced_draw_geotube(CED_GeoTube *c){
     using namespace std;
