@@ -173,10 +173,6 @@ void display(void){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPushMatrix();
 
-    // TODO: fix it!
-    // in case of no rotate, in some cases it could get strange
-    // lines in fisheye view from (0,0,0) to (-inf, -inf,x)
-
     setting.zoom=mm.sf;
     glScalef(mm.sf,mm.sf,mm.sf); //zoom
 

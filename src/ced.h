@@ -105,9 +105,7 @@ struct CEDsettings{
     int win_h; //height of the window (pixel)
     int win_w; //wight of the window (pixel)
     double zoom;
-    double fisheye_alpha;
     double world_size;
-    double fisheye_world_size;
     double bgcolor[4];
     bool show_axes;
     bool fps;

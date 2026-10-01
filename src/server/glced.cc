@@ -44,8 +44,6 @@ static int subSave;
 static int subLoad;
 int showHelp=0;
 float WORLD_SIZE;
-float FISHEYE_WORLD_SIZE;
-double fisheye_alpha = 0.0;
 long int doubleClickTime=0;
 float BG_COLOR[4];
 extern int SELECTED_ID ;
@@ -91,14 +89,11 @@ void defaultSettings(void){
     setting.fixed_view=false;
 
     mm=mm_reset;
-    fisheye_alpha=0;
     set_world_size(DEFAULT_WORLD_SIZE);
 
     setting.va=mm.va;
     setting.ha=mm.ha;
     setting.zoom=mm.sf;
-    setting.fisheye_alpha=fisheye_alpha;
-    setting.fisheye_world_size=FISHEYE_WORLD_SIZE;
     setting.world_size=WORLD_SIZE;
 
     std::cout << "Set options to default settings" << std::endl;
