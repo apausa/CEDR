@@ -13,7 +13,7 @@
 #include <math.h>
 
 #include <ced.h>
-#include <ced_menu.h>
+#include <ced_actions.h>
 
 #include "input.h"
 #include "selection.h"
@@ -28,12 +28,9 @@ extern Point pick_point;
 extern Point pre_pick_point;
 extern bool select_nothing;
 extern bool ced_needs_redraw;
-extern CED_Menu *ced_menu;
-extern CED_PopUpMenu *popupmenu;
 extern int socket_fd;
 extern bool client_connected;
 extern float userDefinedBGColor[];
-void buildPopUpMenu(int x, int y);
 
 CameraState mm = {
     30.,
@@ -77,13 +74,6 @@ void mouseWheel(int, int dir, int, int ){ //hauke
     }
 }
 
-void mouse_passive(int x,int y){
-    //hier ced_menu
-    ced_menu->mouseMove(x,y);
-    popupmenu->mouseMove(x,y);
-    //cout << "x = " << x <<  endl;
-}
-
 void mouse(int btn,int state,int x,int y){
     //hauke
     struct timeval tv;
@@ -102,8 +92,6 @@ void mouse(int btn,int state,int x,int y){
     //double angle;
     switch(btn){
     case MOUSE_LEFT:
-        ced_menu->clickAt((int)mouse_x,(int)mouse_y);
-        popupmenu->clickAt((int)mouse_x,(int)mouse_y);
         //reshape((int)window_width, (int)window_height);
         ced_needs_redraw = true;
 
@@ -165,9 +153,6 @@ void mouse(int btn,int state,int x,int y){
         doubleClickTime=tv.tv_sec*1000000+tv.tv_usec;
         return;
         case MOUSE_RIGHT:
-          //cout << "right button clicked" << endl;
-          ced_menu->clickAt((int)mouse_x,(int)mouse_y);
-          buildPopUpMenu(x,y);
           ced_needs_redraw = true;
           if(ZOOM_RIGHT_CLICK == false){
             return;
@@ -175,7 +160,6 @@ void mouse(int btn,int state,int x,int y){
           move_mode=ZOOM;
           return;
         case MOUSE_MIDDLE:
-          popupmenu->isExtend=false;
           //cout << "middle button clicked" << endl;
           //#ifdef __APPLE__
           //    move_mode=ZOOM;

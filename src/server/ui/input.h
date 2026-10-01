@@ -48,7 +48,6 @@ extern CameraState mm;
 extern CameraState mm_reset;
 
 void mouse(int btn, int state, int x, int y);
-void mouse_passive(int x, int y);
 void mouseWheel(int, int dir, int, int);
 void keypressed(unsigned char key, int x, int y);
 void SpecialKey(int key, int, int);

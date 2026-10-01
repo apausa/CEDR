@@ -9,7 +9,6 @@
 
 #include <ced.h>
 #include <ced_cli.h>
-#include <ced_menu.h>
 #include <third_party/gl_font.h>
 
 #include "render.h"
@@ -114,8 +113,6 @@ void mainLoop(SDL_GLContext gl_context) {
             case SDL_EVENT_MOUSE_MOTION:
                 if (ev.motion.state != 0) {
                     motion((int)ev.motion.x, (int)ev.motion.y);
-                } else {
-                    mouse_passive((int)ev.motion.x, (int)ev.motion.y);
                 }
                 break;
 

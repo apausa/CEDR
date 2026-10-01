@@ -23,8 +23,7 @@
 
 #include <iostream>
 
-#include <ced_menu.h>
-#include "ui/menu.h"
+#include <ced_actions.h>
 #include "render.h"
 #include "cli.h"
 #include "utils/helpers.h"
@@ -110,11 +109,6 @@ float userDefinedBGColor[] = {-1.0, -1.0, -1.0, -1.0};
 extern int socket_fd;
 extern void (*socket_fn)(void);
 extern bool client_connected;
-
-CED_SubSubMenu *detectorlayermenu;
-CED_SubSubMenu *datalayermenu;
-CED_PopUpMenu *popupmenu;
-CED_Menu *ced_menu=NULL;
 
 bool ced_needs_redraw = false;
 SDL_Window* ced_sdl_window = nullptr;
@@ -240,19 +234,7 @@ int main(int argc,char *argv[]){
     set_bg_color(setting.bgcolor[0],setting.bgcolor[1],setting.bgcolor[2],setting.bgcolor[2]); //set to default (black)
     //glClearColor(BG_COLOR[0],BG_COLOR[1], BG_COLOR[2], BG_COLOR[3]);
     init();
-    font_init();   
-
-    buildLayerMenus();
-    buildMainMenu();
-    popupmenu=new CED_PopUpMenu("");
-
-    //glutAttachMenu(GLUT_RIGHT_BUTTON);
-    //for(i=0;i<NUMBER_POPUP_LAYER;i++){ //fill the layer section
-    //  updateLayerEntryInPopupMenu(i);
-    //}
-    //for(i=NUMBER_DATA_LAYER;i<NUMBER_DETECTOR_LAYER+NUMBER_DATA_LAYER;i++){ //fill the layer section
-    //  updateLayerEntryDetector(i);
-    //}
+    font_init();
 
     //glDisable(GL_BLEND);
     if(setting.light == true){

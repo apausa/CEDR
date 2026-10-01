@@ -17,11 +17,9 @@
 #include <ced.h>
 #include <ced_cli.h>
 #include <ced_config.h>
-#include <ced_menu.h>
 
 #include "third_party/fg_geometry.h"
 #include "ui/input.h"
-#include "ui/menu.h"
 #include "ui/overlay.h"
 #include "ui/selection.h"
 
@@ -31,8 +29,6 @@ extern float BG_COLOR[4];
 extern GLfloat axe[][3];
 extern int showHelp;
 
-extern CED_Menu *ced_menu;
-extern CED_PopUpMenu *popupmenu;
 extern SDL_Window *ced_sdl_window;
 
 extern float WORLD_SIZE;
@@ -171,11 +167,6 @@ static void display_world(void){
     glBitmap(8,12,4,6,0,0,y_bm);
     glRasterPos3f(0.,0.,WORLD_SIZE/2.+WORLD_SIZE/8);
     glBitmap(8,12,4,6,0,0,z_bm);
-
-
-    //buildMenuPopup(); //hauke: test
-    //glutAttachMenu(GLUT_RIGHT_BUTTON);
-
 }
 
 void display(void){
@@ -216,8 +207,6 @@ void display(void){
 
     glDisable(GL_LIGHTING);
     draw_ced_title_bar();
-    ced_menu->draw();
-    popupmenu->draw();
     printFPS();
     printEventTime();
 
@@ -332,8 +321,4 @@ void reshape(int w,int h){
             glm::vec3(0,1,0)
         )));
     }
-
-
-    //buildMainMenu();
-    buildLayerMenus();
 }
