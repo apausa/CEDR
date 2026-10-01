@@ -14,7 +14,6 @@ void selectFromMenu(int id);
 #define UNDO                         2312
 
 #define GRAFIC_PERSP                 2002
-#define GRAFIC_LIGHT                 2005
 
 #define VIEW_FRONT      21
 #define VIEW_SIDE       22

@@ -201,14 +201,9 @@ void display(void){
     }
 
 
-    glDisable(GL_LIGHTING);
     draw_ced_title_bar();
     printFPS();
     printEventTime();
-
-    if(setting.light==true){
-        glEnable(GL_LIGHTING);
-    }
 
     SDL_GL_SwapWindow(ced_sdl_window);
 

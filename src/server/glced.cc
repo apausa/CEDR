@@ -60,7 +60,6 @@ void defaultSettings(void){
     setting.trans=true;
     setting.persp=true;
     setting.antia=false;
-    setting.light=false;
     setting.picking_highlight=false;
 
     setting.win_w=500;
@@ -232,10 +231,6 @@ int main(int argc,char *argv[]){
     font_init();
 
     //glDisable(GL_BLEND);
-    if(setting.light == true){
-        setting.light=false;
-        selectFromMenu(GRAFIC_LIGHT);
-    }
 
 
     setting_old[0]=setting;
