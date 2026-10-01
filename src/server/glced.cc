@@ -102,9 +102,6 @@ void defaultSettings(void){
     setting.fisheye_world_size=FISHEYE_WORLD_SIZE;
     setting.world_size=WORLD_SIZE;
 
-    setting.autoshot=false;
-    setting.autoshot_scale=1;
-
     std::cout << "Set options to default settings" << std::endl;
 }
 
@@ -170,8 +167,6 @@ int main(int argc,char *argv[]){
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 
     defaultSettings();
-    setting.screenshot_sections=1;
-
 
     //set_bg_color(setting.bgcolor[0],setting.bgcolor[1],setting.bgcolor[2],setting.bgcolor[2]); //set to default (black)=0;
 
