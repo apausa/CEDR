@@ -2,7 +2,6 @@
 #include <ced_cli.h>
 
 #include "elements/elements.h"
-#include "ui/selection.h"
 
 #define PORT  0x1234
 
@@ -10,7 +9,6 @@ CEDsettings setting;
 
 static unsigned HIT_ID=0;
 static unsigned LINE_ID=0;
-static unsigned CED_PICKING_TEXT_ID=0;
 static unsigned GEOT_ID=0;
 static unsigned GEOC_ID=0;
 static unsigned GEOCR_ID=0;
@@ -56,6 +54,4 @@ void ced_register_elements(void){
 
   //13
   GEOT_ID       =ced_register_element(sizeof(CED_GeoTube),(ced_draw_cb)ced_draw_geotube);
-  //14
-  CED_PICKING_TEXT_ID=ced_register_element(sizeof(CED_PICKING_TEXT),(ced_draw_cb)ced_write_picking_text);
 }

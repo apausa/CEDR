@@ -17,8 +17,6 @@
 
 #include "selection.h"
 
-static int mouse_x, mouse_y;
-
 extern CEDsettings setting;
 
 int SELECTED_ID = -1;
@@ -53,15 +51,6 @@ static unsigned omap_alloced=0;
  */
 void ced_add_objmap(CED_Point *p,int max_dxy, unsigned int ID, unsigned int layer, int type){
     double my_max_dxy =  5*max_dxy*setting.zoom;
-
-    #if DEBUG_PICKING == 1
-        glColor3f(0.0,1.0,0); 
-        glPointSize(my_max_dxy);
-        glBegin(GL_POINTS);
-        glVertex3f(p->x,p->y,p->z);
-        glEnd();
-    #endif
-
 
     //return;
     GLdouble winx,winy,winz;
@@ -235,9 +224,6 @@ int find_selected_object(int x,int y,GLfloat *wx,GLfloat *wy,GLfloat *wz, int *i
 * without center the selected object                           *
 ***************************************************************/
 int ced_picking(int x,int y,GLfloat*, GLfloat*, GLfloat*){
-    mouse_x=x;
-    mouse_y=y;
-
     CED_ObjMap *p,*best;
     unsigned i;
     int dx,dy;
@@ -265,63 +251,5 @@ int ced_picking(int x,int y,GLfloat*, GLfloat*, GLfloat*){
 
     SELECTED_ID = best->ID;
     return 0;
-}
-
-void ced_write_picking_text(CED_PICKING_TEXT *){
-/*
-    static int biggest_number_picking_text=0;
-    if(text->id > biggest_number_picking_text){
-
-    //example based on:  http://nehe.gamedev.net/data/articles/article.asp?article=13
-    GLfloat winX, winY, winZ;
-
-    winX=mouse_x;
-    winY=mouse_y;
-
-    float x=winX;
-    float y=winY;
-    GLint viewport[4];
-    GLdouble modelview[16];
-    GLdouble projection[16];
-    //GLfloat winX, winY, winZ;
-    GLdouble posX, posY, posZ;
-
-    glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
-    glGetDoublev( GL_PROJECTION_MATRIX, projection );
-    glGetIntegerv( GL_VIEWPORT, viewport );
-
-    winX = (float)x;
-    winY = (float)viewport[3] - (float)y;
-    glReadPixels( (int)x, int(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
-
-    gluUnProject( winX, winY, winZ, modelview, projection, viewport, &posX, &posY, &posZ);
-    std::cout << "x: " << posX << "Y: " << posY << "Z: " << posZ << std::endl;
-
-
-    glMatrixMode(GL_MODELVIEW);
-
-    glLineWidth(5);
-    glColor3f(1,0,0);
-
-    glBegin(GL_LINE);
-    glVertex3d(winX,winY,winZ);
-    glVertex3d(0,0,0);
-    glEnd();
-
-    glBegin(GL_LINE);
-    glVertex3d(0,0,0);
-    glVertex3d(10000,10000,10000);
-    glEnd();
-    ced_needs_redraw = true;
-
-
-    std::cout << text->text << std::endl;
-
-    biggest_number_picking_text = text->id;
-    //std::cout << mm.mv.x << mm.mv.y << mm.mv.z << std::endl;
-
-    }
-
-*/
 }
 

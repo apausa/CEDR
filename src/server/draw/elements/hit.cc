@@ -9,10 +9,9 @@
 
 void ced_draw_hit(CED_Hit *h){
     GLfloat d;
-    CED_Point p_new = fisheye_transform(h->p.x, h->p.y, h->p.z, fisheye_alpha);
-    float x = p_new.x;
-    float y = p_new.y;
-    float z = p_new.z;
+    float x = h->p.x;
+    float y = h->p.y;
+    float z = h->p.z;
 
     if(setting.phi_projection){
         //phi_projection is on
@@ -54,10 +53,6 @@ void ced_draw_hit(CED_Hit *h){
 
     glDisable(GL_BLEND);
 
-//    std::cout << " size=" << h->size << " screenshot_sections " << setting.screenshot_sections 
-//	<< " type=" << h->type << std::endl;
-
-
     switch(h->type){
 
     	case CED_HIT_CROSS:
@@ -71,8 +66,7 @@ void ced_draw_hit(CED_Hit *h){
 
     	    if(h->type ==  CED_HIT_CROSS){
     	       	 //     printf("cross type == %d \n",(h->type & CED_HIT_CROSS));
-//    	        d=h->size/2*setting.screenshot_sections;
-    	        d=((GLfloat)h->size)/20.*setting.screenshot_sections;
+    	        d=((GLfloat)h->size)/20.;
     	        glVertex3f(x-d,y-d,z);
     	        glVertex3f(x+d,y+d,z);
 		glVertex3f(x+d,y-d,z);
@@ -80,8 +74,7 @@ void ced_draw_hit(CED_Hit *h){
             }
     	    else if(h->type ==  CED_HIT_STAR){
     	       	 //     printf("cross type == %d \n",(h->type & CED_HIT_CROSS));
-//    	        d=h->size/2*setting.screenshot_sections;
-    	        d=((GLfloat)h->size)/20.*setting.screenshot_sections;
+    	        d=((GLfloat)h->size)/20.;
 
 #if 0 // hauke's version
     	        glVertex3f(x-d,y-d,z+d);
@@ -108,8 +101,6 @@ void ced_draw_hit(CED_Hit *h){
 	    }
     	    else if(h->type ==  CED_HIT_VXD){
     	       	 //     printf("cross type == %d \n",(h->type & CED_HIT_CROSS));
-//    	        d=h->size/2*setting.screenshot_sections;
-//    	        d=((GLfloat)h->size)/20.*setting.screenshot_sections;
                 d=0.005;
 #if 1
     	        glVertex3f(x-d,y-d,z+d);
@@ -140,8 +131,7 @@ void ced_draw_hit(CED_Hit *h){
 #endif
     	    } else {
     	       	//      printf("star type == %d \n",(h->type & CED_HIT_STAR));
-//    	        d=h->size/2.*setting.screenshot_sections;
-    	        d=((GLfloat)h->size)/20.*setting.screenshot_sections;
+    	        d=((GLfloat)h->size)/20.;
     	        glVertex3f(x-d,y,z);
     	        glVertex3f(x+d,y,z);
     	        glVertex3f(x,y-d,z);
@@ -152,10 +142,9 @@ void ced_draw_hit(CED_Hit *h){
             glEnd();
     	    break;
     	default:
-    	    glPointSize((GLfloat)h->size*setting.screenshot_sections);
+    	    glPointSize((GLfloat)h->size);
     	    glBegin(GL_POINTS);
 
-    	    //glVertex3fv(&p_new.x);
             glVertex3f(x,y,z);
             glEnd();
 

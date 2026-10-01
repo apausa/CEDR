@@ -9,10 +9,8 @@
 
 #include <ced.h>
 #include <ced_cli.h>
-#include <ced_menu.h>
 #include <third_party/gl_font.h>
 
-#include "io/screenshot.h"
 #include "render.h"
 #include "ui/input.h"
 
@@ -26,11 +24,6 @@ extern SDL_Window *ced_sdl_window;
 void input_data(void *data){
     if(ced_process_input(data)>0){
         ced_needs_redraw = true;
-        if( setting.autoshot ) {
-          std::cout << " calling screenshot." << std::endl;
-          screenshot("/tmp/glced.tga",setting.autoshot_scale);
-          reshape((int)window_width, (int)window_height);
-        }
     }
 }
 
@@ -120,8 +113,6 @@ void mainLoop(SDL_GLContext gl_context) {
             case SDL_EVENT_MOUSE_MOTION:
                 if (ev.motion.state != 0) {
                     motion((int)ev.motion.x, (int)ev.motion.y);
-                } else {
-                    mouse_passive((int)ev.motion.x, (int)ev.motion.y);
                 }
                 break;
 

@@ -76,9 +76,7 @@ int ced_process_input(void *data);
 void addLayerDescriptionToMenu(int,char *);//glced.c
 void print_layer_text(CED_TEXT *obj);//glced.c
 void ced_draw_legend(CED_Legend *legend);//glced.c
-void selectFromMenu(int id);//glced.c
 void toggleHelpWindow(void);//glced.c
-int buildMenuPopup(void);//glced.c
 
 // glut_socks.cc
 int  tcp_server(unsigned short port, void (*user_func)(void *data));
@@ -88,7 +86,6 @@ struct CEDsettings{
     bool trans;         //grid or surface view
     bool persp;         //perspectivic view or flat projection 
     bool antia;         //anti aliasing
-    bool light;         //light source 
     bool picking_highlight; //marker at picking position
     double detector_trans[NUMBER_DETECTOR_LAYER];
     double detector_cut_angle[NUMBER_DETECTOR_LAYER];
@@ -107,16 +104,11 @@ struct CEDsettings{
     int win_h; //height of the window (pixel)
     int win_w; //wight of the window (pixel)
     double zoom;
-    double fisheye_alpha;
     double world_size;
-    double fisheye_world_size;
     double bgcolor[4];
     bool show_axes;
     bool fps;
-    double screenshot_sections;
     int font; //size of text (menu, shortcuts, text in ced window)
-    bool autoshot; // If true, generate screencapture in every new event
-    int autoshot_scale; // If true, generate screencapture in every new event
 };
 
 extern int animation_start_time; // in ms

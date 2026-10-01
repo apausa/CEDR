@@ -183,7 +183,6 @@ void printShortcuts(void){
 
     shortcuts.push_back( "[ESC] Quit CED" );
     shortcuts.push_back( "[h] Toggle shortcut frame" );
-    shortcuts.push_back( "[CTRL+s] Save screenshot" );
     shortcuts.push_back( "[CTRL+z] Undo" );
     shortcuts.push_back( "[r] Reset view" );
     shortcuts.push_back( "[R] Reset CED" );
@@ -191,7 +190,6 @@ void printShortcuts(void){
     shortcuts.push_back( "[s] Side view" );
     shortcuts.push_back( "[F] Front projection" );
     shortcuts.push_back( "[S] Side projection" );
-    shortcuts.push_back( "[v] Fisheye projection" );
     shortcuts.push_back( "[b] Change background color" );
     shortcuts.push_back( "[+] Zoom in" );
     shortcuts.push_back( "[-] Zoom out" );

@@ -207,19 +207,4 @@
 #define CAMERA_POSITION                     0,0,2000
 
 
-
-//Fisheye alpha factor
-#define FISHEYE_ALPHA                       1e-3
-#define FISHEYE_ZOOM                        8.
-
-/**********************************************************
-* Debug                                                   *
-**********************************************************/
-
-//show pickable points:
-//#define DEBUG_PICKING 1
-
-
-
-
 #endif

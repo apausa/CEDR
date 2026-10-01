@@ -12,11 +12,10 @@
 #include <iostream>
 
 #include <ced.h>
-#include <ced_actions.h>
 #include <ced_cli.h>
 #include <ced_config.h>
 
-#include "io/screenshot.h"
+#include "actions.h"
 #include "ui/input.h"
 #include "render.h"
 #include "utils/helpers.h"
@@ -24,8 +23,6 @@
 using namespace std;
 
 extern float WORLD_SIZE;
-extern float FISHEYE_WORLD_SIZE;
-extern double fisheye_alpha;
 
 CEDsettings setting_old[5];
 
@@ -84,7 +81,6 @@ void selectFromMenu(int id){ //hauke
             setting.phi_projection = false; // no phi projection
             setting.z_projection=false; // no phi projection;
             mm=mm_reset;
-            fisheye_alpha=0;
             setting.fixed_view=false;
             set_world_size(DEFAULT_WORLD_SIZE );
             break;
@@ -105,27 +101,10 @@ void selectFromMenu(int id){ //hauke
             setting.phi_projection = false; // no phi projection
             setting.z_projection=false; // no phi projection;
             mm=mm_reset;
-            fisheye_alpha=0;
             setting.fixed_view=false;
             set_world_size(DEFAULT_WORLD_SIZE );
-            setting.light=false;
 
             setting.show_axes=true;
-            break;
-
-
-        case VIEW_FISHEYE:
-            if(fisheye_alpha==0.0){
-                mm.sf *= FISHEYE_ZOOM; //zoom in to hold the same detector size
-                fisheye_alpha = FISHEYE_ALPHA;
-                FISHEYE_WORLD_SIZE = WORLD_SIZE/(WORLD_SIZE*fisheye_alpha); //<-- new
-                set_world_size(WORLD_SIZE); // <-- old
-            }
-            else{
-                mm.sf *= 1.0/FISHEYE_ZOOM; //zoom out for the same look
-                fisheye_alpha = 0.0;
-                set_world_size(FISHEYE_WORLD_SIZE); //<-- old
-            }
             break;
 
         case VIEW_FRONT:
@@ -348,51 +327,6 @@ void selectFromMenu(int id){ //hauke
             toggle_layer(id-LAYER_0);
             break;
 
-        case GRAFIC_LIGHT:
-            if(setting.light == true){
-                setting.light=false;
-                glDisable(GL_LIGHTING);
-            }else{
-                 setting.light = true;
-
-                 //TODO: CHANGE IT
-                 GLfloat light0_spec[] = {1, 1, 1, 0.5};
-                 GLfloat light0_ambi[] = {1, 1, 1, 0.5};
-                 GLfloat light0_diff[] = {1, 1, 1, 0.5};
-
-                 GLfloat light0_pos[] = {20000, 20000, 20000};
-
-            glBegin(GL_QUADS);
-            glVertex3d(2000,2000,20000);
-            glVertex3d(2500,2000,20000);
-            glVertex3d(2000,2500,20000);
-            glVertex3d(2000,2000,20500);
-            glEnd();
-
-                 glLightfv(GL_LIGHT0, GL_SPECULAR, light0_spec);
-                 glLightfv(GL_LIGHT1, GL_DIFFUSE, light0_ambi);
-                 glLightfv(GL_LIGHT2, GL_AMBIENT, light0_diff);
-
-                 glLightfv(GL_LIGHT0, GL_POSITION, light0_pos);
-                 glLightfv(GL_LIGHT1, GL_POSITION, light0_pos);
-                 glLightfv(GL_LIGHT2, GL_POSITION, light0_pos);
-
-                 glColorMaterial ( GL_FRONT_AND_BACK, GL_EMISSION ) ;
-                 glColorMaterial (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE) ;
-                 glEnable (GL_COLOR_MATERIAL) ;
-
-
-                 glEnable(GL_NORMALIZE);
-
-                 glEnable(GL_LIGHTING);
-                 glEnable(GL_LIGHT0);
-
-                 glEnable(GL_DEPTH_TEST);
-
-                 glMatrixMode(GL_MODELVIEW);
-            }
-            break;
-
         case GRAFIC_PERSP:
             if(setting.persp == true){
                 setting.persp = false;
@@ -402,11 +336,6 @@ void selectFromMenu(int id){ //hauke
                 setting.persp = true;
                 reshape((int)window_width, (int)window_height); //hack, call resize function to overwrite perspectivic settings
             }
-            break;
-        case SAVE_IMAGE1:
-            setting.autoshot_scale=1;
-            screenshot("/tmp/glced.tga",1);
-            reshape((int)window_width, (int)window_height);
             break;
 
     }

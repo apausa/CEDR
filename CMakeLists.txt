@@ -114,7 +114,6 @@ IF( CED_SERVER )
       ./src/server/cli.cc
       ./src/server/event_loop.cc
       ./src/server/utils/helpers.cc
-      ./src/server/io/screenshot.cc
       ./src/server/third_party/gl_font.cc
       ./src/server/third_party/fg_geometry.cc
       ./src/server/ui/input.cc
@@ -123,7 +122,6 @@ IF( CED_SERVER )
       ./src/server/ui/selection.cc
       ./src/server/ui/layers.cc
       ./src/server/draw/element_registry.cc
-      ./src/server/draw/elements/helpers/fisheye.cc
       ./src/server/draw/elements/helpers/color.cc
       ./src/server/draw/elements/helpers/partial_cylinder.cc
       ./src/server/draw/elements/hit.cc

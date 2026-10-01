@@ -33,22 +33,13 @@ void ced_draw_geobox_r(CED_GeoBoxR * box )  {
     glLineWidth(2);
   
     glPushMatrix(); // push the matrix onto the matrix stack and pop it off (preserving the original matrix)
-    //SM-H: Fisheye transform the radial vector to the centre of the box
-    //FIXME: Seems to break the test_ced, but works with sample events??!!
-    //Technically also incorrect, in that it only moves the centre of the box, and does not transform the whole thing
-    CED_Point center_transformed = fisheye_transform(box->center[0], box->center[1], box->center[2], fisheye_alpha);
-    glTranslated(center_transformed.x,center_transformed.y,center_transformed.z);
-    
+    glTranslated(box->center[0],box->center[1],box->center[2]);
+
     glRotated(box->rotate[2], 0.0, 0.0, 1.0);
     glRotated(box->rotate[1], 0.0, 1.0, 0.0);
     glRotated(box->rotate[0], 1.0, 0.0, 0.0);
-   
-    //Deal with z-axis as well, this is given by box-sizes[2]
-    //Need half the box size, and also the distance from the axis 
-    //since this determines how much the geobox is distorted by
-    double z0 = center_transformed.z;
-    double z1 = single_fisheye_transform(box->center[2]+box->sizes[2], fisheye_alpha);
-    double box_z = z1-z0; 
+
+    double box_z = box->sizes[2];
     face[0][0][0] =  + (0.5 * box->sizes[0]);
     face[0][0][1] =  + (0.5 * box->sizes[1]);
     face[0][0][2] =  - (0.5 * box_z);

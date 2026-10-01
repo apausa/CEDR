@@ -12,16 +12,13 @@ void ced_draw_line(CED_Line *h){
 
 //    std::cout << " CED_Line p0=" << h->p0.x << " ," << h->p0.y << " ," << h->p0.z << std::endl;
 //    std::cout << " CED_Line p1=" << h->p1.x << " ," << h->p1.y << " ," << h->p1.z << std::endl;
-//    std::cout << " CED screenshot_sections=" << setting.screenshot_sections << std::endl;
-//    std::cout << " winx, y=" << setting.win_w << " ," << setting.win_h << 
+//    std::cout << " winx, y=" << setting.win_w << " ," << setting.win_h <<
 //	 " zoom=" << setting.zoom << std::endl;
 //    double length=pow(pow(h->p0.x-h->p1.x,2)+pow(h->p0.y-h->p1.y,2)+pow(h->p0.z-h->p1.z,2),0.5);
 //    if( length < 1.0 ) { return ; }
 
-    CED_Point fisheye_point0;
-    CED_Point fisheye_point1;
-    fisheye_point0 = fisheye_transform(h->p0.x, h->p0.y, h->p0.z, fisheye_alpha);
-    fisheye_point1 = fisheye_transform(h->p1.x, h->p1.y, h->p1.z, fisheye_alpha);    	
+    CED_Point p0 = h->p0;
+    CED_Point p1 = h->p1;
 
    	//glEnable(GL_BLEND);
 
@@ -52,20 +49,20 @@ void ced_draw_line(CED_Line *h){
     //hauke
     if(setting.phi_projection){
       //phi_projection is on
-        fisheye_point0.y = fisheye_point0.y > 0 ? sqrt(fisheye_point0.x*fisheye_point0.x + fisheye_point0.y*fisheye_point0.y) : -1*sqrt(fisheye_point0.x*fisheye_point0.x + fisheye_point0.y*fisheye_point0.y);
-        fisheye_point0.x = 0;
+        p0.y = p0.y > 0 ? sqrt(p0.x*p0.x + p0.y*p0.y) : -1*sqrt(p0.x*p0.x + p0.y*p0.y);
+        p0.x = 0;
 
-        fisheye_point1.y = fisheye_point1.y > 0 ? sqrt(fisheye_point1.x*fisheye_point1.x + fisheye_point1.y*fisheye_point1.y) : -1*sqrt(fisheye_point1.x*fisheye_point1.x + fisheye_point1.y*fisheye_point1.y);
-        fisheye_point1.x = 0;
+        p1.y = p1.y > 0 ? sqrt(p1.x*p1.x + p1.y*p1.y) : -1*sqrt(p1.x*p1.x + p1.y*p1.y);
+        p1.x = 0;
    }
    if(setting.z_projection){
-    fisheye_point0.z=0;
-    fisheye_point1.z=0;
+    p0.z=0;
+    p1.z=0;
    }
    //end hauke
 
-    glVertex3fv(&fisheye_point0.x); 
-    glVertex3fv(&fisheye_point1.x); 
+    glVertex3fv(&p0.x);
+    glVertex3fv(&p1.x);
 
 #endif
 //      glVertex3fv(&(h->p0.x));

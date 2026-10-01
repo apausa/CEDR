@@ -23,8 +23,7 @@
 
 #include <iostream>
 
-#include <ced_menu.h>
-#include "ui/menu.h"
+#include "ui/actions.h"
 #include "render.h"
 #include "cli.h"
 #include "utils/helpers.h"
@@ -45,8 +44,6 @@ static int subSave;
 static int subLoad;
 int showHelp=0;
 float WORLD_SIZE;
-float FISHEYE_WORLD_SIZE;
-double fisheye_alpha = 0.0;
 long int doubleClickTime=0;
 float BG_COLOR[4];
 extern int SELECTED_ID ;
@@ -63,7 +60,6 @@ void defaultSettings(void){
     setting.trans=true;
     setting.persp=true;
     setting.antia=false;
-    setting.light=false;
     setting.picking_highlight=false;
 
     setting.win_w=500;
@@ -92,18 +88,12 @@ void defaultSettings(void){
     setting.fixed_view=false;
 
     mm=mm_reset;
-    fisheye_alpha=0;
     set_world_size(DEFAULT_WORLD_SIZE);
 
     setting.va=mm.va;
     setting.ha=mm.ha;
     setting.zoom=mm.sf;
-    setting.fisheye_alpha=fisheye_alpha;
-    setting.fisheye_world_size=FISHEYE_WORLD_SIZE;
     setting.world_size=WORLD_SIZE;
-
-    setting.autoshot=false;
-    setting.autoshot_scale=1;
 
     std::cout << "Set options to default settings" << std::endl;
 }
@@ -113,11 +103,6 @@ float userDefinedBGColor[] = {-1.0, -1.0, -1.0, -1.0};
 extern int socket_fd;
 extern void (*socket_fn)(void);
 extern bool client_connected;
-
-CED_SubSubMenu *detectorlayermenu;
-CED_SubSubMenu *datalayermenu;
-CED_PopUpMenu *popupmenu;
-CED_Menu *ced_menu=NULL;
 
 bool ced_needs_redraw = false;
 SDL_Window* ced_sdl_window = nullptr;
@@ -170,8 +155,6 @@ int main(int argc,char *argv[]){
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 
     defaultSettings();
-    setting.screenshot_sections=1;
-
 
     //set_bg_color(setting.bgcolor[0],setting.bgcolor[1],setting.bgcolor[2],setting.bgcolor[2]); //set to default (black)=0;
 
@@ -245,25 +228,9 @@ int main(int argc,char *argv[]){
     set_bg_color(setting.bgcolor[0],setting.bgcolor[1],setting.bgcolor[2],setting.bgcolor[2]); //set to default (black)
     //glClearColor(BG_COLOR[0],BG_COLOR[1], BG_COLOR[2], BG_COLOR[3]);
     init();
-    font_init();   
-
-    buildLayerMenus();
-    buildMainMenu();
-    popupmenu=new CED_PopUpMenu("");
-
-    //glutAttachMenu(GLUT_RIGHT_BUTTON);
-    //for(i=0;i<NUMBER_POPUP_LAYER;i++){ //fill the layer section
-    //  updateLayerEntryInPopupMenu(i);
-    //}
-    //for(i=NUMBER_DATA_LAYER;i<NUMBER_DETECTOR_LAYER+NUMBER_DATA_LAYER;i++){ //fill the layer section
-    //  updateLayerEntryDetector(i);
-    //}
+    font_init();
 
     //glDisable(GL_BLEND);
-    if(setting.light == true){
-        setting.light=false;
-        selectFromMenu(GRAFIC_LIGHT);
-    }
 
 
     setting_old[0]=setting;

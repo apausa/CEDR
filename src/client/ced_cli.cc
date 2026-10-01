@@ -402,24 +402,6 @@ void ced_layer_text(char *message, int id) {
 }
 */
 
-static unsigned PICKING_TEXT_ID=0;
-
-void ced_picking_text(const char *message, int id) {
-	CED_PICKING_TEXT *text = (CED_PICKING_TEXT*) ced_add(PICKING_TEXT_ID);
-	if(!text){
-        printf("WARNING: ced_picking_text: cant register CED_PICKING_TEXT");  
-        return;
-    }
-
-    strncpy(text->text,message,999);
-    text->id=id;
-    //text->text[CED_MAX_LAYER_CHAR-1] = 0;
-    //text->id=id;
-    //text->x=xCordinate;
-    //text->y=yCordinate;
-}
-//end hauke
-
 static unsigned CONER_ID=0;
 
 void ced_cone_r(float base, float height, double *center, double *rotate, unsigned int layer, float *RGBAcolor) {
@@ -548,9 +530,7 @@ void ced_register_elements(void){
   TEXT_ID       =ced_register_element(sizeof(CED_TEXT),0); //hauke: the order of this items is important
   //12:
   LEGEND_ID	    =ced_register_element(sizeof(CED_Legend), 0);
-  //13: 
+  //13:
   GEOT_ID       =ced_register_element(sizeof(CED_GeoTube),0);
-  //14:
-  PICKING_TEXT_ID =ced_register_element(sizeof(CED_PICKING_TEXT),0);
 }
 

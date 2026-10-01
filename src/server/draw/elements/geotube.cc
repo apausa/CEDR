@@ -11,7 +11,7 @@ void ced_draw_geotube(CED_GeoTube *c){
 
     //cout << "Detector layer: "  << c->type-NUMBER_DATA_LAYER << "trans: " << setting.detector_trans[c->type-NUMBER_DATA_LAYER] << endl;
 
-    double transformed_shift = single_fisheye_transform(c->shift, fisheye_alpha);
+    double transformed_shift = c->shift;
 
 
     double cut_angle=setting.detector_cut_angle[c->type-NUMBER_DATA_LAYER];
@@ -20,12 +20,11 @@ void ced_draw_geotube(CED_GeoTube *c){
     double cut_z=setting.detector_cut_z[c->type-NUMBER_DATA_LAYER];
 
 
-    //SM-H: Fisheye code
-    double d_o = single_fisheye_transform(c->r_o, fisheye_alpha);
-    double d_i = single_fisheye_transform(c->r_i, fisheye_alpha);
+    double d_o = c->r_o;
+    double d_i = c->r_i;
 
     double z0 = transformed_shift;
-    double z1 = single_fisheye_transform(c->z+c->shift, fisheye_alpha);
+    double z1 = c->z+c->shift;
     double z = z1-z0;
 
 
@@ -136,8 +135,7 @@ void ced_draw_geotube(CED_GeoTube *c){
     
             //float detector_lines_wide=0.3;
 
-//            float detector_lines_wide=CED_GEOTUBE_LINE_WIDTH;
-            float detector_lines_wide=CED_GEOTUBE_LINE_WIDTH*setting.autoshot_scale;
+            float detector_lines_wide=CED_GEOTUBE_LINE_WIDTH;
             
     
             //GLfloat line_color[4]={0.5,0.5,0.5, 0.4}; //lines in gray
