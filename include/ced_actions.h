@@ -93,8 +93,6 @@ DESCRIPTION:
 
 #define DETECTOR_ALL            4100
 
-#define SAVE_IMAGE1     5556
-
 #define TOGGLE_PHI_PROJECTION   5000
 #define TOGGLE_Z_PROJECTION     5001
 
