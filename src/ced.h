@@ -77,7 +77,6 @@ void addLayerDescriptionToMenu(int,char *);//glced.c
 void print_layer_text(CED_TEXT *obj);//glced.c
 void ced_draw_legend(CED_Legend *legend);//glced.c
 void toggleHelpWindow(void);//glced.c
-int buildMenuPopup(void);//glced.c
 
 // glut_socks.cc
 int  tcp_server(unsigned short port, void (*user_func)(void *data));

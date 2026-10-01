@@ -52,15 +52,6 @@ static unsigned omap_alloced=0;
 void ced_add_objmap(CED_Point *p,int max_dxy, unsigned int ID, unsigned int layer, int type){
     double my_max_dxy =  5*max_dxy*setting.zoom;
 
-    #if DEBUG_PICKING == 1
-        glColor3f(0.0,1.0,0); 
-        glPointSize(my_max_dxy);
-        glBegin(GL_POINTS);
-        glVertex3f(p->x,p->y,p->z);
-        glEnd();
-    #endif
-
-
     //return;
     GLdouble winx,winy,winz;
 
