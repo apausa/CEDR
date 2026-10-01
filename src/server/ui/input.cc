@@ -13,8 +13,8 @@
 #include <math.h>
 
 #include <ced.h>
-#include <ced_actions.h>
 
+#include "actions.h"
 #include "input.h"
 #include "selection.h"
 

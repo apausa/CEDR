@@ -23,7 +23,7 @@
 
 #include <iostream>
 
-#include <ced_actions.h>
+#include "ui/actions.h"
 #include "render.h"
 #include "cli.h"
 #include "utils/helpers.h"

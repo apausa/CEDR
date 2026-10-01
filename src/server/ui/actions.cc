@@ -12,10 +12,10 @@
 #include <iostream>
 
 #include <ced.h>
-#include <ced_actions.h>
 #include <ced_cli.h>
 #include <ced_config.h>
 
+#include "actions.h"
 #include "ui/input.h"
 #include "render.h"
 #include "utils/helpers.h"
