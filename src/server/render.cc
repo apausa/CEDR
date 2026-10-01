@@ -1,6 +1,6 @@
 /* OpenGL rendering for CED's event display server.
  * Split out of glced.cc: window/GL-state init, the per-frame draw,
- * the screenshot draw path, and viewport/projection setup. */
+ * and viewport/projection setup. */
 
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>
@@ -228,127 +228,6 @@ void display(void){
     SDL_GL_SwapWindow(ced_sdl_window);
 
     glPopMatrix();
-}
-
-void write_world_into_front_buffer(void){
-    ///////
-    //   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //    glPushMatrix();
-    //
-    //    // TODO: fix it!
-    //    // in case of no rotate, in some cases it could get strange
-    //    // lines in fisheye view from (0,0,0) to (-inf, -inf,x)
-    //    setting.zoom=mm.sf;
-    //    glScalef(mm.sf,mm.sf,mm.sf); //zoom
-    //
-    //    glRotatef(mm.va,1.,0.,0.); //rotate
-    //    glRotatef(mm.ha,0.,1.0,0.); //rotate
-    //    glTranslatef(-mm.mv.x,-mm.mv.y,-mm.mv.z); //move
-    //
-    //    if(setting.picking_highlight==true && select_nothing == false){
-    //        glColor3f(1,0,0);
-    //        glPointSize(10);
-    //        glBegin(GL_POINTS);
-    //        //cout<< "point: " << pick_point.x << ", " << pick_point.y << ", " << pick_point.z << endl;
-    //        glVertex3f(pick_point.x,pick_point.y,pick_point.z);
-    //        glEnd();
-    //    }
-    //    // draw static objects
-    //    display_world(); //only axes?
-    //
-    //    // draw elements (hits + detector)
-    //    ced_prepare_objmap();
-    //    ced_do_draw_event();
-    //
-    //
-    //    if(showHelp == 1){
-    //        printShortcuts();
-    //    }
-    //
-    //
-    //    glDisable(GL_LIGHTING);
-    //    ced_menu->draw();
-    //    popupmenu->draw();
-    //    printFPS();
-    //
-    //    if(setting.light==true){
-    //        glEnable(GL_LIGHTING);
-    //    }
-    //
-    //    glutSwapBuffers();
-    //
-    //    glPopMatrix();
-    //
-    ///////
-    glMatrixMode(GL_PROJECTION);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //glRotatef(mm.va,1.,0.,0.);
-    //glRotatef(mm.ha,0.,1.0,0.);
-
-    setting.zoom=mm.sf;
-    glScalef(mm.sf,mm.sf,mm.sf); //streech the world
-
-    //glScalef(1.19,1.19,1.19);
-
-    //glScalef(1.1,1.1,1.1);
-
-
-    glRotatef(mm.va,1.,0.,0.); //rotate
-    glRotatef(mm.ha,0.,1.0,0.); //rotate
-    glTranslatef(-mm.mv.x,-mm.mv.y,-mm.mv.z); //move
-
-
-      //glMatrixMode(GL_MODELVIEW); //
-
-    // draw static objects
-
-    glMatrixMode(GL_MODELVIEW);
-
-    //glTranslatef(-mm.mv.x,-mm.mv.y,-mm.mv.z);
-
-    display_world();
-
-
-    //glTranslatef(-mm.mv.x,-mm.mv.y,-mm.mv.z);
-
-
-   //glTranslatef(0,0,1000);
-
-     //const GLdouble clip_plane[]={0,0,-1,setting.z_cutting};
-     //if(setting.z_cutting < 6999){
-     //     glEnable(GL_CLIP_PLANE0);
-     //}else{
-     //     glDisable(GL_CLIP_PLANE0);
-     //}
-     //glClipPlane(GL_CLIP_PLANE0,clip_plane);
-
-
-    // draw elements (hits + detector)
-    ced_prepare_objmap();
-
-    ced_do_draw_event();
-
-
-    //cout << "mm.sf: " << mm.sf << "hinterer clipping plane: " << 5000*2.0*mm.sf << std::endl;
-    //gluPerspective(60,window_width/window_height,100*2.0*mm.sf,5000*2.0*mm.sf);
-
-    //    std::cout  << "clipping planes: " << 200*2.0*mm.sf << " bis " << 5000*2.0*mm.sf << std::endl;
-    //
-    //    gluPerspective(60,window_width/window_height,200*2.0*mm.sf,5000*2.0*mm.sf);
-    //        glMatrixMode( GL_MODELVIEW );
-    //
-    //        glLoadIdentity();
-    //        gluLookAt  (0,0,2000,    0,0,0,    0,1,0);
-    //
-    //
-
-    if(setting.light==true){
-        glEnable(GL_LIGHTING);
-    }
-
-
-    //printFPS();
 }
 
 void reshape(int w,int h){
