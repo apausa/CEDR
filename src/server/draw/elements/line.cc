@@ -12,8 +12,7 @@ void ced_draw_line(CED_Line *h){
 
 //    std::cout << " CED_Line p0=" << h->p0.x << " ," << h->p0.y << " ," << h->p0.z << std::endl;
 //    std::cout << " CED_Line p1=" << h->p1.x << " ," << h->p1.y << " ," << h->p1.z << std::endl;
-//    std::cout << " CED screenshot_sections=" << setting.screenshot_sections << std::endl;
-//    std::cout << " winx, y=" << setting.win_w << " ," << setting.win_h << 
+//    std::cout << " winx, y=" << setting.win_w << " ," << setting.win_h <<
 //	 " zoom=" << setting.zoom << std::endl;
 //    double length=pow(pow(h->p0.x-h->p1.x,2)+pow(h->p0.y-h->p1.y,2)+pow(h->p0.z-h->p1.z,2),0.5);
 //    if( length < 1.0 ) { return ; }

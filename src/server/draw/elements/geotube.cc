@@ -136,8 +136,7 @@ void ced_draw_geotube(CED_GeoTube *c){
     
             //float detector_lines_wide=0.3;
 
-//            float detector_lines_wide=CED_GEOTUBE_LINE_WIDTH;
-            float detector_lines_wide=CED_GEOTUBE_LINE_WIDTH*setting.autoshot_scale;
+            float detector_lines_wide=CED_GEOTUBE_LINE_WIDTH;
             
     
             //GLfloat line_color[4]={0.5,0.5,0.5, 0.4}; //lines in gray
