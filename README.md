@@ -1,4 +1,4 @@
-# CED (C Event Display)
+# Small C++ Event Display
 
 [![linux](https://github.com/iLCSoft/CED/actions/workflows/linux.yml/badge.svg)](https://github.com/iLCSoft/CED/actions/workflows/linux.yml)
 [![Build Status](https://scan.coverity.com/projects/12338/badge.svg)](https://scan.coverity.com/projects/ilcsoft-ced)
