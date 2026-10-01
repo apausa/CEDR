@@ -15,7 +15,6 @@
 #include <vector>
 
 #include <ced.h>
-#include <ced_menu.h>
 #include <third_party/gl_font.h>
 
 #include "overlay.h"

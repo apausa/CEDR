@@ -2,6 +2,8 @@
 
 #include <string>
 
+static constexpr int CED_TITLE_BAR_HEIGHT = 24;
+
 void printFPS(void);
 void printEventTime(void);
 void printShortcuts(void);
