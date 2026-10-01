@@ -114,7 +114,6 @@ IF( CED_SERVER )
       ./src/server/cli.cc
       ./src/server/event_loop.cc
       ./src/server/utils/helpers.cc
-      ./src/server/io/screenshot.cc
       ./src/server/third_party/gl_font.cc
       ./src/server/third_party/fg_geometry.cc
       ./src/server/ui/input.cc
