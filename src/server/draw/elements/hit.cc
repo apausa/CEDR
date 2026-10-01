@@ -9,10 +9,9 @@
 
 void ced_draw_hit(CED_Hit *h){
     GLfloat d;
-    CED_Point p_new = fisheye_transform(h->p.x, h->p.y, h->p.z, fisheye_alpha);
-    float x = p_new.x;
-    float y = p_new.y;
-    float z = p_new.z;
+    float x = h->p.x;
+    float y = h->p.y;
+    float z = h->p.z;
 
     if(setting.phi_projection){
         //phi_projection is on
@@ -146,7 +145,6 @@ void ced_draw_hit(CED_Hit *h){
     	    glPointSize((GLfloat)h->size);
     	    glBegin(GL_POINTS);
 
-    	    //glVertex3fv(&p_new.x);
             glVertex3f(x,y,z);
             glEnd();
 

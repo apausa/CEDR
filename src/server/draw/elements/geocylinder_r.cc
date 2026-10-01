@@ -6,8 +6,6 @@
  * GeoCylinder
  */
 void ced_draw_geocylinder_r(CED_GeoCylinderR *c){
-    //FIXME: implement fisheye here as well
-    //Non trivial due to possible rotations...
     if(!IS_VISIBLE(c->layer)){
         return;
     }
