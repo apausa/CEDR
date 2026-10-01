@@ -216,7 +216,6 @@ void keypressed(unsigned char key, int x, int y) {
 
     SELECT_FROM_MENU(26, UNDO);
     SELECT_FROM_MENU('x', UNDO);
-    SELECT_FROM_MENU(19, SAVE_IMAGE1);
   case 27: // esc
     exit(0);
   case 'c':

@@ -183,7 +183,6 @@ void printShortcuts(void){
 
     shortcuts.push_back( "[ESC] Quit CED" );
     shortcuts.push_back( "[h] Toggle shortcut frame" );
-    shortcuts.push_back( "[CTRL+s] Save screenshot" );
     shortcuts.push_back( "[CTRL+z] Undo" );
     shortcuts.push_back( "[r] Reset view" );
     shortcuts.push_back( "[R] Reset CED" );

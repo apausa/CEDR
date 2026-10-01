@@ -16,7 +16,6 @@
 #include <ced_cli.h>
 #include <ced_config.h>
 
-#include "io/screenshot.h"
 #include "ui/input.h"
 #include "render.h"
 #include "utils/helpers.h"
@@ -402,11 +401,6 @@ void selectFromMenu(int id){ //hauke
                 setting.persp = true;
                 reshape((int)window_width, (int)window_height); //hack, call resize function to overwrite perspectivic settings
             }
-            break;
-        case SAVE_IMAGE1:
-            setting.autoshot_scale=1;
-            screenshot("/tmp/glced.tga",1);
-            reshape((int)window_width, (int)window_height);
             break;
 
     }
