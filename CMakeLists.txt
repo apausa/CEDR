@@ -122,7 +122,6 @@ IF( CED_SERVER )
       ./src/server/ui/selection.cc
       ./src/server/ui/layers.cc
       ./src/server/draw/element_registry.cc
-      ./src/server/draw/elements/helpers/fisheye.cc
       ./src/server/draw/elements/helpers/color.cc
       ./src/server/draw/elements/helpers/partial_cylinder.cc
       ./src/server/draw/elements/hit.cc
