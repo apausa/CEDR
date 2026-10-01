@@ -316,16 +316,6 @@ void ced_geocylinder_r(float d, double z, double * center, double * rotate, unsi
 void ced_geobox_r(double * sizes, double * center, double * rotate, unsigned int color, unsigned int layer);
 void ced_geobox_r_solid(double * sizes, double * center, double * rotate, unsigned int color, unsigned int layer);
 
-//hauke
-  typedef struct{
-    char text[1000];
-    int id;
-  } CED_PICKING_TEXT; 
-
-void ced_picking_text(const char *, int number);
-
-//--------
-
   typedef struct{
     char text[400];
     int id;
