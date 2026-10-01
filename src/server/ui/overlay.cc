@@ -190,7 +190,6 @@ void printShortcuts(void){
     shortcuts.push_back( "[s] Side view" );
     shortcuts.push_back( "[F] Front projection" );
     shortcuts.push_back( "[S] Side projection" );
-    shortcuts.push_back( "[v] Fisheye projection" );
     shortcuts.push_back( "[b] Change background color" );
     shortcuts.push_back( "[+] Zoom in" );
     shortcuts.push_back( "[-] Zoom out" );

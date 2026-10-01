@@ -23,8 +23,6 @@
 using namespace std;
 
 extern float WORLD_SIZE;
-extern float FISHEYE_WORLD_SIZE;
-extern double fisheye_alpha;
 
 CEDsettings setting_old[5];
 
@@ -83,7 +81,6 @@ void selectFromMenu(int id){ //hauke
             setting.phi_projection = false; // no phi projection
             setting.z_projection=false; // no phi projection;
             mm=mm_reset;
-            fisheye_alpha=0;
             setting.fixed_view=false;
             set_world_size(DEFAULT_WORLD_SIZE );
             break;
@@ -104,27 +101,11 @@ void selectFromMenu(int id){ //hauke
             setting.phi_projection = false; // no phi projection
             setting.z_projection=false; // no phi projection;
             mm=mm_reset;
-            fisheye_alpha=0;
             setting.fixed_view=false;
             set_world_size(DEFAULT_WORLD_SIZE );
             setting.light=false;
 
             setting.show_axes=true;
-            break;
-
-
-        case VIEW_FISHEYE:
-            if(fisheye_alpha==0.0){
-                mm.sf *= FISHEYE_ZOOM; //zoom in to hold the same detector size
-                fisheye_alpha = FISHEYE_ALPHA;
-                FISHEYE_WORLD_SIZE = WORLD_SIZE/(WORLD_SIZE*fisheye_alpha); //<-- new
-                set_world_size(WORLD_SIZE); // <-- old
-            }
-            else{
-                mm.sf *= 1.0/FISHEYE_ZOOM; //zoom out for the same look
-                fisheye_alpha = 0.0;
-                set_world_size(FISHEYE_WORLD_SIZE); //<-- old
-            }
             break;
 
         case VIEW_FRONT:

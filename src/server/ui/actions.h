@@ -16,7 +16,6 @@ void selectFromMenu(int id);
 #define GRAFIC_PERSP                 2002
 #define GRAFIC_LIGHT                 2005
 
-#define VIEW_FISHEYE    20
 #define VIEW_FRONT      21
 #define VIEW_SIDE       22
 #define VIEW_ZOOM_IN    23
