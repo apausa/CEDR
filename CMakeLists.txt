@@ -118,8 +118,7 @@ IF( CED_SERVER )
       ./src/server/third_party/gl_font.cc
       ./src/server/third_party/fg_geometry.cc
       ./src/server/ui/input.cc
-      ./src/server/ui/menu.cc
-      ./src/server/ui/menu_actions.cc
+      ./src/server/ui/actions.cc
       ./src/server/ui/overlay.cc
       ./src/server/ui/selection.cc
       ./src/server/ui/layers.cc

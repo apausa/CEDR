@@ -15,7 +15,6 @@
 #include <string>
 
 #include <ced.h>
-#include <ced_menu.h>
 
 #include "screenshot.h"
 #include "ui/input.h"
