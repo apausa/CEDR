@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 
 #include "elements.h"
-#include "../ui/selection.h"
+#include "ui/selection.h"
 
 /*
  * Hit element

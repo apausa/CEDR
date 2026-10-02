@@ -1,5 +1,5 @@
 #include "elements.h"
-#include "../ui/selection.h"
+#include "ui/selection.h"
 
 /*
  * Line element

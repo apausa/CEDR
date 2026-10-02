@@ -1,7 +1,9 @@
 #include <ced.h>
 #include <ced_cli.h>
+#include <settings.h>
 
 #include "elements/elements.h"
+#include "ui/layers.h"
 
 #define PORT  0x1234
 

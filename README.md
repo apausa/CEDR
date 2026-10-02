@@ -1,55 +1,43 @@
-# Small C++ Event Display
+# Small C++ Event Display (SCED)
 
-[![linux](https://github.com/iLCSoft/CED/actions/workflows/linux.yml/badge.svg)](https://github.com/iLCSoft/CED/actions/workflows/linux.yml)
-[![Build Status](https://scan.coverity.com/projects/12338/badge.svg)](https://scan.coverity.com/projects/ilcsoft-ced)
+SCED is a server client application for OpenGL drawing
 
-CED is a server client application for OpenGL drawing
+## License
 
 CED is distributed under the [GPLv3 License](http://www.gnu.org/licenses/gpl-3.0.en.html)
 
 [![License](https://www.gnu.org/graphics/gplv3-127x51.png)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-## Build instructions
+## Build instructions in MacOS with Homebrew
 
-For building CED from source you need to have CMake and CMakeModules for
-ilcsoft installed in your system. ( cmake homepage: www.cmake.org )
-once cmake is in your $PATH, follow this steps:
+```bash
+# Install libraries (fontconfig and OpenGL are already preinstalled)
+brew install sdl3 sdl3_ttf glm cmake
 
-	mkdir build
-	cd build
-	cmake -DCMAKE_MODULE_PATH=/path/to/ilcsoft_CMakeModules [-DCED_SERVER=ON] ..
-	make install
+# Configure build
+cmake -S . -B build -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/sdl3;/opt/homebrew/opt/sdl3_ttf;/opt/homebrew/opt/glm;/opt/homebrew/opt/fontconfig"
 
-**NOTE**: Only the CED client library is built per default!!
+# Compile project
+cmake --build build -j4
 
-If you also need the display server (glced), you have to
-explicitly set the cmake option CED_SERVER to ON and you
-need GLUT installed on your system ( http://freeglut.sourceforge.net )
+# Run server
+./build/sced-server
+```
 
-If cmake cannot find GLUT you can use the variables
-```CMAKE_LIBRARY_PATH``` and ```CMAKE_INCLUDE_PATH``` to find libraries
-and header files in non-standard paths, e.g.:
+### Kill server
 
-	export CMAKE_LIBRARY_PATH=/path/to/glut/lib
-	export CMAKE_INCLUDE_PATH=/path/to/glut/include
-    cmake ..
-    make install
+```bash
+pkill -f sced-server
+```
 
+## sced-server command line options
 
-## Users Manual
-The users manual can be found at [./doc/manual.pdf](./doc/manual.pdf)
+	sced-server -h  # show help
+	sced-server     # run event display server
 
-
-## glced command line options
-
-	glced -h  # show help
-	glced     # run event display server
-
-
-## Controls for CED display server (glced window):
+## Controls for CED display server (sced-server window):
 
 The window has to be active and the mouse placed inside it.
-
 
 ### Keyboard shortcuts:
 
@@ -64,8 +52,6 @@ The window has to be active and the mouse placed inside it.
 		key 'b' ...... toggle background color
 		key 'h' ...... display help menu
 
-
-
 ### Mouse interaction:
 
 		L button + drag:    rotate
@@ -73,9 +59,6 @@ The window has to be active and the mouse placed inside it.
 		M button + drag:    shift
 		M wheel  + up  :    zoom-in
 		M wheel  + down:    zoom-out
-
-
-
 
 ## Using the CED client library with Marlin:
 
@@ -94,14 +77,12 @@ Somewhere at the beginning of file ******Processor.cc
 		     ...........................
 		#define SOME_LAYER   (19<<CED_LAYER_SHIFT)
 
-
 Once per task in first init: 
 
 	  void *********Processor::init() { 
 	  //    Initialize event display   
 	    ced_client_init("localhost",7286);
 	    ced_register_elements();
-
 
 In the first called ```Processor::processEvent( LCEvent * evt )```
 initialize the geometry:
@@ -152,7 +133,6 @@ In any Processor:
 
         // hit rendering is delayed by the time "t" (in seconds). Produce animation effect. "Show FPS" must be switched on.
 		// void ced_hit_ID_animate(float x,float y,float z, float t, unsigned type, unsigned size, unsigned color, unsigned id);
-
 
 to define colors is better use gimp - it gives that crasy numbers easily
 

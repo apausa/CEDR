@@ -11,6 +11,7 @@
 #include <ced.h>
 #include <ced_cli.h>
 #include <ced_config.h>
+#include <settings.h>
 
 extern CEDsettings setting;
 extern int selected_layer;

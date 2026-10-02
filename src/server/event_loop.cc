@@ -13,6 +13,7 @@
 
 #include "render.h"
 #include "ui/input.h"
+#include "ui/overlay.h"
 
 #include "event_loop.h"
 
@@ -20,6 +21,7 @@ extern int socket_fd;
 extern void (*socket_fn)(void);
 extern void (*idle_func)(void);
 extern SDL_Window *ced_sdl_window;
+extern bool ced_needs_redraw;
 
 void input_data(void *data){
     if(ced_process_input(data)>0){

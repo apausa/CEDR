@@ -6,6 +6,7 @@
 
 #include <ced.h>
 #include <ced_cli.h>
+#include <settings.h>
 
 #include "utils/helpers.h"
 
