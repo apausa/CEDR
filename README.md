@@ -21,18 +21,21 @@ cmake -S . -B build -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/sdl3;/opt/homebrew/op
 cmake --build build -j4
 
 # Run server
-./build/glced
+./build/sced-server
 ```
 
-## Users Manual
-The users manual can be found at [./doc/manual.pdf](./doc/manual.pdf)
+### Kill server
 
-## glced command line options
+```bash
+pkill -f sced-server
+```
 
-	glced -h  # show help
-	glced     # run event display server
+## sced-server command line options
 
-## Controls for CED display server (glced window):
+	sced-server -h  # show help
+	sced-server     # run event display server
+
+## Controls for CED display server (sced-server window):
 
 The window has to be active and the mouse placed inside it.
 
