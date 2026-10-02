@@ -33,6 +33,8 @@ extern int showHelp;
 extern SDL_Window *ced_sdl_window;
 
 extern float WORLD_SIZE;
+extern GLfloat window_width;
+extern GLfloat window_height;
 
 extern Point pick_point;
 extern Point pre_pick_point;

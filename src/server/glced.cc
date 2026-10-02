@@ -30,8 +30,6 @@
 #include "utils/helpers.h"
 #include "event_loop.h"
 
-#define DEFAULT_WORLD_SIZE 1000.  //SJA:FIXED Reduce world size to give better scale
-
 using namespace std;
 
 //*************** global variables ***************************************//

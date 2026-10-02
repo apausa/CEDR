@@ -28,6 +28,8 @@ using namespace std;
 extern int animation_start_time;
 extern int animate_layer;
 extern float WORLD_SIZE;
+extern GLfloat window_width;
+extern GLfloat window_height;
 extern CEDsettings setting;
 
 void printFPS(void){

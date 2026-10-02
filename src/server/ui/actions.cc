@@ -24,6 +24,9 @@
 using namespace std;
 
 extern float WORLD_SIZE;
+extern GLfloat window_width;
+extern GLfloat window_height;
+extern bool ced_needs_redraw;
 extern CEDsettings setting;
 
 CEDsettings setting_old[5];

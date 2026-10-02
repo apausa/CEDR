@@ -33,6 +33,8 @@ extern bool ced_needs_redraw;
 extern int socket_fd;
 extern bool client_connected;
 extern float userDefinedBGColor[];
+extern GLfloat window_width;
+extern GLfloat window_height;
 extern CEDsettings setting;
 
 CameraState mm = {
