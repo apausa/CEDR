@@ -72,62 +72,8 @@ void ced_do_draw_event(void);
  */
 int ced_process_input(void *data);
 
-//------------
-void addLayerDescriptionToMenu(int,char *);//glced.c
-void print_layer_text(CED_TEXT *obj);//glced.c
-void ced_draw_legend(CED_Legend *legend);//glced.c
-void toggleHelpWindow(void);//glced.c
-
 // glut_socks.cc
 int  tcp_server(unsigned short port, void (*user_func)(void *data));
-
-
-struct CEDsettings{
-    bool trans;         //grid or surface view
-    bool persp;         //perspectivic view or flat projection 
-    bool antia;         //anti aliasing
-    bool picking_highlight; //marker at picking position
-    double detector_trans[NUMBER_DETECTOR_LAYER];
-    double detector_cut_angle[NUMBER_DETECTOR_LAYER];
-    double detector_cut_z[NUMBER_DETECTOR_LAYER];
-    bool detector_picking;
-//    double cut_angle; //deprecated
-//    double trans_value; //deprecated
-//    double z_cutting; //deprecated
-    bool layer[CED_MAX_LAYER];
-    bool phi_projection;
-    bool z_projection;
-    double view[3];
-    double va; //vertical angle of view
-    double ha; //horionzional angle of view
-    bool fixed_view;
-    int win_h; //height of the window (pixel)
-    int win_w; //wight of the window (pixel)
-    double zoom;
-    double world_size;
-    double bgcolor[4];
-    bool show_axes;
-    bool fps;
-    int font; //size of text (menu, shortcuts, text in ced window)
-};
-
-extern int animation_start_time; // in ms
-extern int animate_layer;
-/*
-//important: 
-//          - sum of all layers must be smaler than max_layer!
-//          - number_popup_layer must be smaler than number_data_layer
-
-#define CED_MAX_LAYER       100 
-#define NUMBER_POPUP_LAYER      20
-#define NUMBER_DATA_LAYER       25
-#define NUMBER_DETECTOR_LAYER   20
-
-
-#define CED_MAX_LAYER_CHAR 400
-*/
-
-//-------------
 
 //#ifdef __cplusplus
 // }
