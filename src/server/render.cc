@@ -17,6 +17,7 @@
 #include <ced.h>
 #include <ced_cli.h>
 #include <ced_config.h>
+#include <settings.h>
 
 #include "third_party/fg_geometry.h"
 #include "ui/input.h"
@@ -37,6 +38,7 @@ extern Point pick_point;
 extern Point pre_pick_point;
 extern int selected_layer;
 extern bool select_nothing;
+extern CEDsettings setting;
 
 void init(void){
     //Set background color

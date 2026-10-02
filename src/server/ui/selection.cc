@@ -14,6 +14,7 @@
 #include <iostream>
 
 #include <ced.h>
+#include <settings.h>
 
 #include "selection.h"
 

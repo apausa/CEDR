@@ -13,10 +13,12 @@
 #include <math.h>
 
 #include <ced.h>
+#include <settings.h>
 
 #include "actions.h"
 #include "input.h"
 #include "selection.h"
+#include "utils/helpers.h"
 
 using namespace std;
 
@@ -31,6 +33,7 @@ extern bool ced_needs_redraw;
 extern int socket_fd;
 extern bool client_connected;
 extern float userDefinedBGColor[];
+extern CEDsettings setting;
 
 CameraState mm = {
     30.,

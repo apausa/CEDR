@@ -15,6 +15,7 @@
 #include <vector>
 
 #include <ced.h>
+#include <settings.h>
 #include <third_party/gl_font.h>
 
 #include "overlay.h"
@@ -27,6 +28,7 @@ using namespace std;
 extern int animation_start_time;
 extern int animate_layer;
 extern float WORLD_SIZE;
+extern CEDsettings setting;
 
 void printFPS(void){
     //calculate fps:
